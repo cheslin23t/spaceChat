@@ -1,0 +1,2 @@
+run = "npx node@16 app.js"
+language = "nix"

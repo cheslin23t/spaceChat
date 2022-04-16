@@ -5,6 +5,27 @@
 <!DOCTYPE html>
 <html style="font-size: 16px;">
   <head>
+    <script>
+      window.addEventListener('load', function () {
+  
+
+      function findGetParameter(parameterName) {
+    var result = null,
+        tmp = [];
+    location.search
+        .substr(1)
+        .split("&")
+        .forEach(function (item) {
+          tmp = item.split("=");
+          if (tmp[0] === parameterName) result = decodeURIComponent(tmp[1]);
+        });
+    return result;
+}
+      if(findGetParameter("key")){
+        document.getElementById("keyInput").value = findGetParameter("key")
+      }
+      })
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta charset="utf-8">
     <meta name="keywords" content="Spacechat, Free, Coming soon!">
@@ -74,7 +95,7 @@
                   <p style="color: red;"><%= msg %></p>
                   <form method="post" action="/requestaccess">
                   <p class="u-text-1">Access Code</p>
-                  <input placeholder="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX" required name="key">
+                  <input placeholder="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX" required id="keyInput" name="key">
                   <a href="" class="u-active-grey-50 u-border-none u-btn u-button-style u-hover-palette-3-base u-palette-2-base u-btn-1"><button type="submit" style="background-color: transparent; border-color: transparent;">Create account!</button></a>
                 </form></center>
                 </div>

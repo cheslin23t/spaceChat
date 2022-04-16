@@ -1,5 +1,6 @@
 const express = require('express');
 const app = express();
+var md = new require('markdown-it')();
 var Filter = require('bad-words');
 var customFilter = new Filter({ placeHolder: '*'});
 app.all("*", (req, res, next) => {
@@ -141,7 +142,7 @@ app.get("/chat", signedin, async function(req, res, next) {
 })
 
 app.get("/createkey", (req, res) => {
-  res.render(__dirname + "/ejs/createkey.ejs")
+  res.render(__dirname + "/ejs/createKey.ejs")
 })
 app.post("/createkey", async (req, res)=>{
   try {
@@ -202,7 +203,13 @@ io.on('connection', (socket) => {
         
       }
     } else {
-    var realMessage = message.replaceAll('\n', "<br>").trim("<br>")
+      
+    
+      console.dir(message)
+var newMessage = md.render(message);
+      console.dir(newMessage)
+      var realMessage = newMessage.substring(0, newMessage.length - 1).replaceAll("\n", "<br />").replaceAll("<p>", "<span>").replaceAll('</p>', '</span>')
+        console.dir(realMessage)
     var lastMessage = messageModel.find({})
     var newMsgId = (await lastMessage).length
     var newMsg = new messageModel({message: customFilter.clean(realMessage), author: req.session.user, sent: Date.now(), deleted: false, messageId: newMsgId })
