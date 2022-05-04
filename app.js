@@ -19,8 +19,20 @@ const http = require('http');
 const server = http.createServer(app);
 const { Server } = require("socket.io");
 const mongoose = require('mongoose')
-const io = new Server(server);
-
+const { instrument } = require("@socket.io/admin-ui");
+const io = new Server(server, {
+  cors: {
+    origin: ["https://admin.socket.io"],
+    credentials: true
+  }
+    });
+instrument(io, {
+  auth: {
+    type: "basic",
+    username: "admin",
+    password: process.env.OwnerPassEncrypted // "changeit" encrypted with bcrypt
+  },
+});
 mongoose.connect(process.env.MongooseURI);
 function removeDashes(key){
   return key.replace(/-/g, '')
@@ -212,10 +224,11 @@ var newMessage = md.render(message);
         console.dir(realMessage)
     var lastMessage = messageModel.find({})
     var newMsgId = (await lastMessage).length
-    var newMsg = new messageModel({message: customFilter.clean(realMessage), author: req.session.user, sent: Date.now(), deleted: false, messageId: newMsgId })
-    await newMsg.save()
+    
     let msgObj = {message: customFilter.clean(realMessage), username: req.session.user, messageId: newMsgId}
     io.emit('serverMsg', msgObj)
+      var newMsg = new messageModel({message: customFilter.clean(realMessage), author: req.session.user, sent: Date.now(), deleted: false, messageId: newMsgId })
+    await newMsg.save()
     }} catch (errMsg) {console.dir(errMsg)}
   });
   socket.on("delMsg", async (msgId) => {
@@ -226,8 +239,9 @@ var newMessage = md.render(message);
     var msgAuthor = msg.author
     if(msgAuthor !== req.session.user) {return}
     msg.deleted = true
-    await msg.save()
-    io.emit('serverDelMsg', msgId)
+   io.emit('serverDelMsg', msgId)
+     await msg.save()
+    
     } catch (errMsg) {console.dir(errMsg)}
   })
   socket.on('disconnect', () => {
