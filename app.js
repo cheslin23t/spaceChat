@@ -128,6 +128,9 @@ app.get("/signup", (req, res) => {
   }
   
 })
+app.get("/chat@addfriends", (req, res) => {
+  res.render(__dirname + "/ejs/addfriend.ejs")
+})
 app.post("/signup", async (req, res) => {
   try {
   const users = await userModel.find({username: req.body.username.toLowerCase()});

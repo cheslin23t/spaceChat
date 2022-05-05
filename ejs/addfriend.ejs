@@ -1,16 +1,6 @@
 <head>
-  <script src="/socket.io/socket.io.js"></script>
-  <script>
-    var socket = io();
-    function sendMessage(message) {
-      socket.volatile.emit("cliMsg", message);
-    }
-    function deleteMsg(msgId) {
-      console.log(msgId)
-      socket.volatile.emit("delMsg", msgId);
-    }
-  </script>
   
+
   <style>
     .deleteButton {
       background: red;
@@ -29,90 +19,11 @@
       cursor: pointer;
     }
   </style>
-  <script src=
-"https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js">
-    </script>
-  
-    <!-- jQuery code to show the working of this method -->
-    <script>
-        $(document).ready(function() {
-            
-                $(document).scrollTop($(document).height());
-            
-        });
-    </script>
-  <script>
-    window.addEventListener('load', function () {
-      // your code here
-
-      const ele = document.getElementById('msgInput');
-
-      ele.addEventListener('keydown', function (e) {
-        // Get the code of pressed key
-        const keyCode = e.which || e.keyCode;
-
-        // 13 represents the Enter key
-        if (keyCode === 13 && !e.shiftKey) {
-          // Don't generate a new line
-          e.preventDefault();
-          if (ele.value !== "") {
-            sendMessage(ele.value)
-            ele.value = ""
-          }
-
-        }
-
-        document.getElementById("sendMsgButton").onclick = function (e) {
-          if (ele.value !== "") {
-            sendMessage(ele.value)
-            ele.value = ""
-          }
-        }
-      });
-    })
-
-    socket.on("serverMsg", (msg) => {
-      console.log(msg)
-      if (msg.username == "<%= usr %>") {
-        var item = document.getElementById("msgs");
-        item.innerHTML = item.innerHTML + `
-          <div class="d-flex justify-content-end mb-4" id=${msg.messageId}>
-            <div class="msg_cotainer_send">
-              ${msg.message}
-                <span class="msg_time_send" style="font-weight: bold;">You</span>
-            </div>
-
-            <div class="img_cont_msg">
-              <img src="/images/user-icon.png" style="background-color: yellowgreen;"
-                class="rounded-circle user_img_msg">
-            </div>&nbsp;&nbsp;&nbsp;<button class="deleteButton" onclick="deleteMsg(${msg.messageId})">🗑️</button>
-          </div>`;
-
-        window.scrollTo(0, document.body.scrollHeight);
-
-      }
-      else {
-        var item = document.getElementById("msgs");
-        item.innerHTML = item.innerHTML + `<div class="d-flex justify-content-start mb-4" id=${msg.messageId}>
-                    
-                    <div class="img_cont_msg">
-                      <img src="/images/user-icon.png" class="rounded-circle user_img_msg" style="background-color: cyan">
-                    </div>
-                    
-                    <div class="msg_cotainer">
-                      ${msg.message}
-                      <span class="msg_time" style="color: black; font-weight: bold;">${msg.username}</span>
-                    </div>
-                  </div>`;
-
-        window.scrollTo(0, document.body.scrollHeight);
-      }
-    })
-    socket.on("serverDelMsg", (msgId) => {
-      var msg = document.getElementById(msgId)
-      msg.remove()
-    })
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js">
   </script>
+
+  <!-- jQuery code to show the working of this method -->
+  
   <style>
     /* Config */
     /* mixins */
@@ -296,11 +207,11 @@
     integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js">
     $(document).ready(function () {
-      
+
       $('#action_menu_btn').click(function () {
         $('.action_menu').toggle();
       });
-      
+
     });</script>
   <link rel="stylesheet" type="text/css"
     href="https://cdnjs.cloudflare.com/ajax/libs/malihu-custom-scrollbar-plugin/3.1.5/jquery.mCustomScrollbar.min.css">
@@ -314,9 +225,13 @@
   <div class="sidenav">
     <ul class="u-nav u-unstyled u-nav-1">
       <li class="u-nav-item"><a
-          class="u-active-black u-black u-button-style u-nav-link u-text-active-palette-4-base u-text-hover-palette-2-base"
-          href="/" style="padding: 26px 54px;">Home</a>
-      </li>
+        class="u-active-black u-black u-button-style u-nav-link u-text-active-palette-4-base u-text-hover-palette-2-base"
+        href="/chat" style="padding: 26px 54px;">Home</a>
+        <br>
+        <a
+      class="u-active-black u-black u-button-style u-nav-link u-text-active-palette-4-base u-text-hover-palette-2-base"
+      href="/chat@addfriends" style="text-align: center; padding: 26px 54px;">Add <br> Friends</a>
+    </li>
       <ul></ul>
   </div>
   <div class="page-bg" style="background-color: #120b50;"></div>
@@ -327,8 +242,92 @@
     <div class="particle particle-3"></div>
     <div class="particle particle-4"></div>
   </div>
+  <style>
+    .form__group {
+  position: relative;
+  padding: 15px 0 0;
+  margin-top: 10px;
+  width: 150px;
+}
 
-  
+.form__field {
+  font-family: inherit;
+  width: 100%;
+  border: 0;
+  border-bottom: 2px solid #9b9b9b;
+  outline: 0;
+  font-size: 1.3rem;
+  color: #fff;
+  padding: 7px 0;
+  background: transparent;
+  transition: border-color 0.2s;
+}
+.form__field::placeholder {
+  color: transparent;
+}
+.form__field:placeholder-shown ~ .form__label {
+  font-size: 1.3rem;
+  cursor: text;
+  top: 20px;
+}
+
+.form__label {
+  position: absolute;
+  top: 0;
+  display: block;
+  transition: 0.2s;
+  font-size: 1rem;
+  color: #9b9b9b;
+}
+
+.form__field:focus {
+  padding-bottom: 6px;
+  font-weight: 700;
+  border-width: 3px;
+  border-image: linear-gradient(to right, #11998e, #38ef7d);
+  border-image-slice: 1;
+}
+.form__field:focus ~ .form__label {
+  position: absolute;
+  top: 0;
+  display: block;
+  transition: 0.2s;
+  font-size: 1rem;
+  color: #11998e;
+  font-weight: 700;
+}
+
+/* reset input */
+.form__field:required, .form__field:invalid {
+  box-shadow: none;
+}
+
+
+    .box {
+      border-radius: 75px;
+      border: 25px ridge red;
+      padding: 165px 75px;
+      background-color: #3b3b3b;
+      position: absolute;
+      left: 57%;
+      /* relative to nearest positioned ancestor or body element */
+      top: 50%;
+      /*  relative to nearest positioned ancestor or body element */
+      transform: translate(-50%, -50%);
+      /* relative to element's height & width */
+    }
+  </style>
+  <div class="box">
+    <form action="/addfriend" method="post">
+      <center>
+        <h1 style="color: white;">Add Friends</h1>
+        <br>
+        <div class="form__group field">
+        <input type="input" class="form__field" placeholder="Friend" name="name" id='name' title="Your Friends Username" required />
+        <label for="name" class="form__label">Friend</label>
+      </div></center>
+    </form>
+  </div>
 
 
 </body>
