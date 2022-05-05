@@ -49,7 +49,8 @@ const userSchema = new mongoose.Schema({
   banned: Boolean,
   warn: Boolean,
   warns: Object,
-  admin: Boolean
+  admin: Boolean,
+  friendrequests: Object
 })
 const messageSchema = new mongoose.Schema({
   message: String,
@@ -128,8 +129,8 @@ app.get("/signup", (req, res) => {
   }
   
 })
-app.get("/chat@addfriends", (req, res) => {
-  res.render(__dirname + "/ejs/addfriend.ejs")
+app.get("/chat@friends", (req, res) => {
+  res.render(__dirname + "/ejs/friends.ejs")
 })
 app.post("/signup", async (req, res) => {
   try {
