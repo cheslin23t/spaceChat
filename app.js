@@ -132,6 +132,9 @@ app.get("/signup", (req, res) => {
 app.get("/chat/friends", (req, res) => {
   res.render(__dirname + "/ejs/friends.ejs")
 })
+app.get("/chat/friendrequests", (req, res) => {
+  res.render(__dirname + "/ejs/friendrequests.ejs")
+})
 app.get("/chat/addfriends", (req, res) => {
   res.render(__dirname + "/ejs/addfriends.ejs")
 })
