@@ -230,7 +230,7 @@
         <br>
         <a
       class="u-active-black u-black u-button-style u-nav-link u-text-active-palette-4-base u-text-hover-palette-2-base"
-      href="/chat@friends" style="text-align: center; padding: 26px 54px;">Friends <br> Menu</a>
+      href="/chat/friends" style="text-align: center; padding: 26px 54px;">Friends <br> Menu</a>
     </li>
       <ul></ul>
   </div>
@@ -305,7 +305,7 @@
 
     .box {
       border-radius: 75px;
-      border: 25px ridge red;
+      border: 15px solid yellow;
       padding: 165px 75px;
       background-color: #3b3b3b;
       position: absolute;
@@ -427,12 +427,21 @@ h1 {
 }
   </style>
   <div class="box">
-    <form action="/addfriend" method="post">
-      <center>
+    <center>
+    <% if(typeof(errorMessage) !== "undefined") { %>
+      <h3 style="color: red;"><%= errorMessage %></h1>
+    <% } %>
+    <% if(typeof(successMessage) !== "undefined") { %>
+      <h3 style="color: limegreen;"><%= successMessage%></h1>
+    <% } %>
+    <br>
+    <br>
+    <form action="/chat/addfriends" method="post">
+      
         <h1 style="color: white;">Add Friends</h1>
         <br>
         <div class="form__group field">
-        <input type="input" class="form__field" placeholder="Friend" name="name" id='name' title="Your Friends Username" required />
+        <input type="input" class="form__field" placeholder="Friend" name="username" id='name' title="Your Friends Username" required />
         <label for="name" class="form__label">Friend</label>
         <br>
         <br>
