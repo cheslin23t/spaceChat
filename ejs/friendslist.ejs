@@ -622,7 +622,7 @@ body {
             <article class="leaderboard">
                 <header>
               
-                  <h1 class="leaderboard__title"><span class="leaderboard__title--top"></span><span class="leaderboard__title--bottom">Friend Requests</span></h1>
+                  <h1 class="leaderboard__title"><span class="leaderboard__title--top"></span><span class="leaderboard__title--bottom">Friends List</span></h1>
                 </header>
                 
                 <main class="leaderboard__profiles">
@@ -630,9 +630,7 @@ body {
                         <article class="leaderboard__profile">
                             <span class="leaderboard__name" ><%= requests[i] %></span>
                             <div style="align-content: right;">
-                                <button type="button" onclick="document.location.href = '/chat/requests/accept/<%= requests[i] %>'" style="color: lime; border-color: cyan; border-width: 1px; border-radius: 12cm; background-color: darkgreen;">Accept</button>
-                                <br>
-                                <button type="button" onclick="document.location.href = '/chat/friendrequests/deny/<%= requests[i] %>'" style="color: white; border-radius: 12cm; background-color: red;">Deny</button>
+                                <button type="button" onclick="document.location.href = '/chat/friendrequests/deny/<%= requests[i] %>'" style="color: white; border-radius: 12cm; background-color: red;">Remove</button>
                                 </div>
                         </article>
                      <% }} %>

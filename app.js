@@ -54,6 +54,7 @@ const userSchema = new mongoose.Schema({
 })
 const messageSchema = new mongoose.Schema({
   message: String,
+  for: string,
   created: Date,
   author: String,
   deleted: Boolean,
