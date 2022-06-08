@@ -1,3 +1,5 @@
+// Notes: Make a collection of DMS, and each dm would have a list of participants.
+
 const express = require('express');
 const app = express();
 var md = new require('markdown-it')();
@@ -50,7 +52,13 @@ const userSchema = new mongoose.Schema({
   warn: Boolean,
   warns: Object,
   admin: Boolean,
-  friendrequests: Object
+  friendrequests: Object,
+  friends: Object
+})
+const dmSchema = new mongoose.Schema({
+  users: Array,
+  dmId: String, 
+  messages: Array
 })
 const messageSchema = new mongoose.Schema({
   message: String,
@@ -69,6 +77,7 @@ const session = cookieSession({
 })
 const messageModel = mongoose.model("messages", messageSchema)
 const accessModel = mongoose.model("AccessKeys", accessSchema)
+const dmModule = mongoose.model("Dms", dmSchema)
 const userModel = mongoose.model("Users", userSchema)
 app.use(session)
 app.set('view engine', 'ejs');
@@ -130,49 +139,55 @@ app.get("/signup", (req, res) => {
   }
   
 })
-app.get("/chat/friends", (req, res) => {
-  res.render(__dirname + "/ejs/friends.ejs")
-})
-app.get("/chat/requests", (req, res) => {
-  res.render(__dirname + "/ejs/friendrequests.ejs")
-})
-app.get("/chat/addfriends", (req, res) => {
-  res.render(__dirname + "/ejs/addfriends.ejs")
-})
-app.post("/chat/addfriends", async (req, res) => {
-  var friendName = req.body.username
-  console.dir(friendName)
-  if(!friendName) {
-    return res.redirect("/400")
-  }
-  if(typeof(friendName) !== "string") {
-    return res.redirect("/400")
-  }
-  friendName = friendName.toLowerCase()
-  var friend = await userModel.find({ username: friendName })
-  if(!friend[0]) {
-    return res.render(__dirname + "/ejs/addfriends.ejs", {errorMessage: "User does not exist"})
-  }
-  else {
-    if(!friend[0].friendrequests){
-      friend[0].friendrequests = [req.session.user]
-    }
-    else {
-      if(friend[0].friendrequests.includes(req.session.user)){
-        return res.render(__dirname + "/ejs/addfriends.ejs", {errorMessage: `You already sent a request to this person!`})
-      }
-      else if(friend[0].username == req.session.user){
-        return res.render(__dirname + "/ejs/addfriends.ejs", {errorMessage: `You can't send a friend request to yourself!`})
-      
-      }
-      
-      friend[0].friendrequests = friend[0].friendrequests.push(req.session.user)
-    }
-    await friend[0].save()
-    return res.render(__dirname + "/ejs/addfriends.ejs", {successMessage: `Friend request sent to ${friendName}!`})
+app.get("/chat/home", signedin, async (req, res) => {
   
-  }
+  res.render(__dirname + "/ejs/chathome.ejs")
 })
+// app.get("/chat/requests",signedin, async(req, res) => {
+//   var User = await userModel.find({username: req.session.user})
+//   if(!User[0]){
+//     return;
+//   }
+//   var friends = User[0].friendrequests
+//   res.render(__dirname + "/ejs/friendrequests.ejs", {requests: friends})
+// })
+// app.get("/chat/addfriends", signedin, (req, res) => {
+//   res.render(__dirname + "/ejs/addfriends.ejs")
+// })
+// app.post("/chat/addfriends", async (req, res) => {
+//   var friendName = req.body.username
+//   console.dir(friendName)
+//   if(!friendName) {
+//     return res.redirect("/400")
+//   }
+//   if(typeof(friendName) !== "string") {
+//     return res.redirect("/400")
+//   }
+//   friendName = friendName.toLowerCase()
+//   var friend = await userModel.find({ username: friendName })
+//   if(!friend[0]) {
+//     return res.render(__dirname + "/ejs/addfriends.ejs", {errorMessage: "User does not exist"})
+//   }
+//   else {
+//     if(!friend[0].friendrequests){
+//       friend[0].friendrequests = [req.session.user]
+//     }
+//     else {
+//       if(friend[0].friendrequests.includes(req.session.user)){
+//         return res.render(__dirname + "/ejs/addfriends.ejs", {errorMessage: `You already sent a request to this person!`})
+//       }
+//       else if(friend[0].username == req.session.user){
+//         return res.render(__dirname + "/ejs/addfriends.ejs", {errorMessage: `You can't send a friend request to yourself!`})
+      
+//       }
+      
+//       friend[0].friendrequests = friend[0].friendrequests.push(req.session.user)
+//     }
+//     await friend[0].save()
+//     return res.render(__dirname + "/ejs/addfriends.ejs", {successMessage: `Friend request sent to ${friendName}!`})
+  
+//   }
+// })
 app.post("/signup", async (req, res) => {
   try {
   const users = await userModel.find({username: req.body.username.toLowerCase()});
