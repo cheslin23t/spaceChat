@@ -11,7 +11,7 @@ app.all("*", (req, res, next) => {
   next()
 })
 require('dotenv').config()
-const { v4: uuidv4 } = require('uuid');
+const { v4: uuidv4, v1: uuidv1 } = require('uuid');
 //const bodyParser = require('body-parser')
 var cookieSession = require('cookie-session')
 const crypto = require("crypto");
@@ -299,7 +299,8 @@ app.post('/chat/adddm', async (req, res) => {
   if(ifDmExists[0] || ifDmExists2[0]) {
     return res.render(__dirname + "/ejs/createDms.ejs", {msg: "Already created a DM for this user!"})
   }
-  
+  const newDmID = uuidv1()
+  const newDm = new dmModel({dmId: newDmID, users: [req.session.user, friend[0].username], dmSecret: uuidv4()})
 })
 app.post("/login", async (req, res) => {
   const sha256Hasher = crypto.createHash("sha256", process.env.cryptoSecret);
