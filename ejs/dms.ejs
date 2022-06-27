@@ -141,28 +141,7 @@
         color: #fff;
         z-index: 2;
       }
-      a.button5{
- display:inline-block;
- padding:0.46em 1.6em;
- border:0.2em solid #eeff00;
- margin:0 0.2em 0.2em 0;
- border-radius:0.12em;
- box-sizing: border-box;
- text-decoration:none;
- font-family:'Roboto',sans-serif;
- font-weight:300;
- color:#000000;
- text-shadow: 0 0.04em 0.04em rgba(0,0,0,0.35);
- background-color:#FFFFFF;
- text-align:center;
- transition: all 0.15s;
-}
-a.button5:hover{
- text-shadow: 0 0 2em rgba(255,255,255,1);
- color:#ffffff;
- border-color:#15ff00;
- background-color: blueviolet;
-}
+  
       h4 {
         color: #fff;
         font-family: Monoton;
@@ -210,6 +189,182 @@ a.button5:hover{
           text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #fff, 0 0 20px #ff1177, 0 0 35px #ff1177, 0 0 40px #ff1177, 0 0 50px #ff1177, 0 0 75px #ff1177;
         }
       }
+      .leaderboard {
+          margin-right: 250px;
+  max-width: 2500px;
+  width: 100%;
+  border-radius: 12px;
+}
+.leaderboard header {
+  --start: 15%;
+  height: 130px;
+  background-image: repeating-radial-gradient(circle at var(--start), transparent 0%, transparent 10%, rgba(54, 89, 219, 0.33) 10%, rgba(54, 89, 219, 0.33) 17%), linear-gradient(to right, #5b7cfa, #3659db);
+  color: #fff;
+  position: relative;
+  border-radius: 12px 12px 0 0;
+  overflow: hidden;
+}
+.leaderboard header .leaderboard__title {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  right: calc(var(--start) * .75);
+  transform: translateY(-50%);
+  text-transform: uppercase;
+  margin: 0;
+}
+.leaderboard header .leaderboard__title span {
+  display: block;
+}
+.leaderboard header .leaderboard__title--top {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 6.5px;
+}
+.leaderboard header .leaderboard__title--bottom {
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 3.55px;
+  opacity: 0.65;
+  transform: translateY(-2px);
+}
+.leaderboard header .leaderboard__icon {
+  fill: #fff;
+  opacity: 0.35;
+  width: 50px;
+  position: absolute;
+  top: 50%;
+  left: var(--start);
+  transform: translate(-50%, -50%);
+}
+.leaderboard__profiles {
+  background-color: #fff;
+  border-radius: 0 0 12px 12px;
+  padding: 15px 15px 20px;
+  display: grid;
+  row-gap: 8px;
+}
+.leaderboard__profile {
+  display: grid;
+  grid-template-columns: 1fr 3fr 1fr;
+  align-items: center;
+  padding: 10px 30px 10px 10px;
+  overflow: hidden;
+  border-radius: 10px;
+  box-shadow: 0 5px 7px -1px rgba(51, 51, 51, 0.23);
+  cursor: pointer;
+  transition: transform 0.25s cubic-bezier(0.7, 0.98, 0.86, 0.98), box-shadow 0.25s cubic-bezier(0.7, 0.98, 0.86, 0.98);
+  background-color: #fff;
+}
+.leaderboard__profile:hover {
+  transform: scale(1.2);
+  box-shadow: 0 9px 47px 11px rgba(51, 51, 51, 0.18);
+}
+.leaderboard__picture {
+  max-width: 100%;
+  width: 60px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 10px #ebeef3, 0 0 0 22px #f3f4f6;
+}
+.leaderboard__name {
+  color: #979cb0;
+  font-weight: 600;
+  font-size: 20px;
+  letter-spacing: 0.64px;
+  margin-left: 12px;
+}
+.leaderboard__value {
+  color: #35d8ac;
+  font-weight: 700;
+  font-size: 34px;
+  text-align: right;
+}
+.leaderboard__value > span {
+  opacity: 0.8;
+  font-weight: 600;
+  font-size: 13px;
+  margin-left: 3px;
+}
+
+body {
+  margin: 0;
+  background-color: #eaeaea;
+  display: grid;
+  height: 100vh;
+  place-items: center;
+  font-family: "Source Sans Pro", sans-serif;
+}
+
+.leaderboard {
+  box-shadow: 0 0 40px -10px rgba(0, 0, 0, 0.4);
+}
+
+.gradient-button {
+  position: absolute;
+  z-index: 1;
+  display: block;
+  top: 25 px;
+  left: calc(50% - 6rem - 5px);
+  height: 5rem;
+  width: 12rem;
+  margin: auto;
+  background: transparent linear-gradient(to top left, rgba(249, 208, 129, 0.2) 0%, rgba(227, 2, 62, 0.2) 40%, rgba(49, 128, 135, 0.2) 100%);
+  border: 5px solid transparent;
+  border-image-source: linear-gradient(to top left, #f9d081 0%, #e3023e 40%, #318087 100%);
+  border-image-slice: 1;
+  transition: transform 0.25s;
+  letter-spacing: 0.2rem;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 1.25rem;
+  font-weight: 300;
+  text-align: center;
+  text-decoration: none;
+  text-transform: uppercase;
+  color: #333;
+}
+.gradient-button::after {
+  content: "";
+  position: absolute;
+  top: 25 px;
+  left: -5px;
+  width: 100%;
+  height: 100%;
+  margin: auto;
+  border: 5px solid transparent;
+  opacity: 0;
+  pointer-events: none;
+  border-image-slice: 1;
+  z-index: -1;
+  background: transparent linear-gradient(to bottom left, rgba(249, 208, 129, 0.25) 10%, rgba(227, 2, 62, 0.25) 30%, rgba(49, 128, 135, 0.25) 90%);
+  border-image-source: linear-gradient(to bottom left, #f9d081 10%, #e3023e 30%, #318087 90%);
+  transition: opacity 1s;
+}
+.gradient-button:active {
+  transform: scale(0.96);
+}
+.gradient-button:active::before {
+  opacity: 1;
+}
+.gradient-button::before {
+  content: "";
+  position: absolute;
+  top: 25 px;
+  left: -5px;
+  width: 100%;
+  height: 100%;
+  margin: auto;
+  border: 5px solid transparent;
+  opacity: 0;
+  pointer-events: none;
+  border-image-slice: 1;
+  z-index: 0;
+  border-image-source: linear-gradient(to bottom left, #f9d081 20%, #e3023e 40%, #318087 70%);
+  transition: opacity 0.5s;
+}
+.gradient-button:hover::after {
+  opacity: 1;
+}
+
     </style>
     <link rel="stylesheet" href="/css/home.css" media="screen">
     <link rel="stylesheet" href="/css/maincss.css" media="screen">
@@ -220,7 +375,7 @@ a.button5:hover{
     <script class="u-script" type="text/javascript" src="/js/mainjs.js" defer=""></script>
     <link id="u-theme-google-font" rel="stylesheet"
       href="https://fonts.googleapis.com/css?family=Roboto:100,100i,300,300i,400,400i,500,500i,700,700i,900,900i|Open+Sans:300,300i,400,400i,500,500i,600,600i,700,700i,800,800i">
-    <title>Home Menu</title>
+    <title>Main Chat</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
       integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
     <link rel="stylesheet" href="/css/chat.css">
@@ -365,32 +520,11 @@ a.button5:hover{
     height: 100%;
   }
   
-  .button {
-    width: 205px;
-    height: 80px;
-    margin-top: 100px;
-    perspective: 1800px;
-    overflow: hidden;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    left: -25px;
-  }
+  
   .button2 {
     width: 205px;
     height: 80px;
     margin-top: 200px;
-    perspective: 1800px;
-    overflow: hidden;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    left: -25px;
-  }
-  .button3 {
-    width: 205px;
-    height: 80px;
-    margin-top: 300px;
     perspective: 1800px;
     overflow: hidden;
     display: flex;
@@ -448,19 +582,6 @@ a.button5:hover{
     width: 50px;
     z-index: 1;
   }
-  .button3 .qube .front::after {
-    background: #FFF;
-    content: "";
-    height: 155px;
-    left: -75px;
-    opacity: 0.4;
-    position: absolute;
-    top: -100px;
-    transform: rotate(35deg);
-    transition: all 0.3s cubic-bezier(0.19, 1, 0.22, 1);
-    width: 50px;
-    z-index: 1;
-  }
   .button .qube .back {
     background-color: #D6D35D;
     color: #191919;
@@ -494,15 +615,51 @@ a.button5:hover{
               user-select: none; /* Non-prefixed version, currently
                                     supported by Chrome, Edge, Opera and Firefox */
   }
+  a.button5{
+ display:inline-block;
+ padding:0.46em 1.6em;
+ border:0.2em solid #eeff00;
+ margin:0 0.2em 0.2em 0;
+ border-radius:0.12em;
+ box-sizing: border-box;
+ text-decoration:none;
+ font-family:'Roboto',sans-serif;
+ font-weight:300;
+ color: white;
+ text-shadow: 0 0.04em 0.04em rgba(0,0,0,0.35);
+ background-color: #1e1e1e;
+ text-align:center;
+ transition: all 0.15s;
+}
+a.button5:hover{
+ text-shadow: 0 0 2em rgba(255,255,255,1);
+ color:#333;
+ border-color:blueviolet;
+ background-color: lime;
+}
     </style>
     <div class="box">
       
         <center>
-          <a href="/chat/dms" class="button5">Direct Messages</a>
-          <br>
-          <br>
-          <a href="/chat/createDms" class="button5">Create DMs</a>
-        </div></center>
+            <article class="leaderboard">
+                <header>
+              
+                  <h1 class="leaderboard__title"><span class="leaderboard__title--top"></span><span class="leaderboard__title--bottom">Direct Messages list</span></h1>
+                </header>
+                
+                <main class="leaderboard__profiles">
+                    <% if(requests){ for(var i=0; i < requests.length; i++) { %>
+                        <article class="leaderboard__profile">
+                            <span class="leaderboard__name" ><%= requests[i].name %></span>
+                            <div style="align-content: right;">
+                                <a href="/dm/<%= requests[i].id %>" class="button5">Open</a>
+                                </div>
+                        </article>
+                     <% }} %>
+                  
+                  
+                </main>
+              </div></center>
       
     </div>
   

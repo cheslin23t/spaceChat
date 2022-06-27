@@ -50,6 +50,13 @@ border-radius: 0 0 15px 15px !important;
     height: 60px !important;
     overflow-y: auto;
 }
+.type_msg-disabled{
+    background-color: rgba(150, 150, 150, 0.623) !important;
+    border:0 !important;
+    color:rgb(0, 0, 0) !important;
+    height: 60px !important;
+    cursor: not-allowed;
+}
     .type_msg:focus{
      box-shadow:none !important;
    outline:0px !important;
@@ -61,6 +68,13 @@ background-color: rgba(0,0,0,0.3) !important;
     color: white !important;
     cursor: pointer;
 }
+.attach_btn-disabled{
+    border-radius: 15px 0 0 15px !important;
+    background-color: rgba(94, 94, 94, 0.3) !important;
+        border:0 !important;
+        color: rgba(112, 112, 112, 0.733) !important;
+        cursor: not-allowed;
+    }
 .send_btn{
 border-radius: 0 15px 15px 0 !important;
 background-color: rgba(0,0,0,0.3) !important;
@@ -68,6 +82,13 @@ background-color: rgba(0,0,0,0.3) !important;
     color: white !important;
     cursor: pointer;
 }
+.send_btn-disabled{
+    border-radius: 0 15px 15px 0 !important;
+    background-color: rgba(100, 100, 100, 0.3) !important;
+        border:0 !important;
+        color: rgba(102, 102, 102, 0.74) !important;
+        cursor:not-allowed;
+    }
 .search_btn{
     border-radius: 0 15px 15px 0 !important;
     background-color: rgba(0,0,0,0.3) !important;

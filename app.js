@@ -4,10 +4,10 @@ const express = require('express');
 const app = express();
 var md = new require('markdown-it')();
 var Filter = require('bad-words');
-var customFilter = new Filter({ placeHolder: '*'});
+var customFilter = new Filter({ placeHolder: '*' });
 app.all("*", (req, res, next) => {
   console.log("\nPage: " + req.path + "\nMethod: " + req.method)
-  
+
   next()
 })
 require('dotenv').config()
@@ -27,7 +27,7 @@ const io = new Server(server, {
     origin: ["https://admin.socket.io"],
     credentials: true
   }
-    });
+});
 instrument(io, {
   auth: {
     type: "basic",
@@ -36,10 +36,10 @@ instrument(io, {
   },
 });
 mongoose.connect(process.env.MongooseURI);
-function removeDashes(key){
+function removeDashes(key) {
   return key.replace(/-/g, '')
 }
- 
+
 const accessSchema = new mongoose.Schema({
   key: String,
   valid: Boolean
@@ -52,12 +52,12 @@ const userSchema = new mongoose.Schema({
   warn: Boolean,
   warns: Object,
   admin: Boolean,
-  friendrequests: Object,
-  friends: Object
+  dms: Array
 })
 const dmSchema = new mongoose.Schema({
   users: Array,
-  dmId: String, 
+  dmId: String,
+  dmSecret: String,
   messages: Array
 })
 const messageSchema = new mongoose.Schema({
@@ -77,13 +77,13 @@ const session = cookieSession({
 })
 const messageModel = mongoose.model("messages", messageSchema)
 const accessModel = mongoose.model("AccessKeys", accessSchema)
-const dmModule = mongoose.model("Dms", dmSchema)
+const dmModel = mongoose.model("Dms", dmSchema)
 const userModel = mongoose.model("Users", userSchema)
 app.use(session)
 app.set('view engine', 'ejs');
 
 function signedin(req, res, next) {
-  if(req.session.user){
+  if (req.session.user) {
     next()
   }
   else {
@@ -97,51 +97,80 @@ app.get('/home', (req, res) => {
   res.render(__dirname + "/ejs/home.ejs")
 })
 app.get('/', (req, res) => {
-  if(req.session.user) {
+  if (req.session.user) {
     res.redirect("/home")
   } else {
-  res.render(__dirname + '/ejs/index.ejs');
+    res.render(__dirname + '/ejs/index.ejs');
   }
 });
 app.get('/logout', (req, res) => {
   req.session.user = undefined
   res.redirect("/")
 })
-app.get("/requestaccess", (req, res)=>{
-  res.render(__dirname + "/ejs/access.ejs", {msg: ""})
+app.get("/requestaccess", (req, res) => {
+  res.render(__dirname + "/ejs/access.ejs", { msg: "" })
 })
 app.post("/requestaccess", async (req, res) => {
   try {
-    
-  
-  const keys = await accessModel.find({ key: removeDashes(req.body.key), valid: true })
-  const key = keys[0]
-  if(key){
-    
-    key.valid = false
-    await key.save()
-    req.session.access = true
-    res.redirect('/signup')
-    
-  }
-  else {
-    res.render(__dirname + "/ejs/access.ejs", {msg: "Invalid Key"})
-  }
-} catch (errMsg) {console.dir(errMsg)}
+
+
+    const keys = await accessModel.find({ key: removeDashes(req.body.key), valid: true })
+    const key = keys[0]
+    if (key) {
+
+      key.valid = false
+      await key.save()
+      req.session.access = true
+      res.redirect('/signup')
+
+    }
+    else {
+      res.render(__dirname + "/ejs/access.ejs", { msg: "Invalid Key" })
+    }
+  } catch (errMsg) { console.dir(errMsg) }
 })
 app.get("/signup", (req, res) => {
 
-  if(req.session.access !== true){
+  if (req.session.access !== true) {
     res.redirect('/requestaccess')
   }
   else {
-  res.render(__dirname + "/ejs/signup.ejs", {msg: ""})
+    res.render(__dirname + "/ejs/signup.ejs", { msg: "" })
   }
-  
+
 })
-app.get("/chat/home", signedin, async (req, res) => {
-  
+app.get("/chat/menu", signedin, async (req, res) => {
+
   res.render(__dirname + "/ejs/chathome.ejs")
+})
+app.get("/chat/createDms", signedin, (req, res) => {
+  res.render(__dirname + "/ejs/createDms.ejs")
+})
+app.get("/chat/dms", signedin, async (req, res) => {
+  const user = await userModel.find({ username: req.session.user })
+  if (!user[0]) {
+    return
+  }
+  if (!user[0].dms) {
+    res.render(__dirname + "/ejs/dms.ejs", { requests: [] })
+  }
+  else {
+
+    res.render(__dirname + "/ejs/dms.ejs", { requests: user[0].dms })
+  }
+})
+app.post("/chat/addDms", signedin, async (req, res) => {
+  var dmUser = req.body.username
+  if (!dmUser) {
+    return
+  }
+  var dmUserV = await userModel.find({ username: dmUser })
+  if (!dmUserV[0]) {
+    return res.render(__dirname + "/ejs/createDms.ejs", { errorMessage: "User not found." })
+  }
+  else {
+
+  }
 })
 // app.get("/chat/requests",signedin, async(req, res) => {
 //   var User = await userModel.find({username: req.session.user})
@@ -178,136 +207,197 @@ app.get("/chat/home", signedin, async (req, res) => {
 //       }
 //       else if(friend[0].username == req.session.user){
 //         return res.render(__dirname + "/ejs/addfriends.ejs", {errorMessage: `You can't send a friend request to yourself!`})
-      
+
 //       }
-      
+
 //       friend[0].friendrequests = friend[0].friendrequests.push(req.session.user)
 //     }
 //     await friend[0].save()
 //     return res.render(__dirname + "/ejs/addfriends.ejs", {successMessage: `Friend request sent to ${friendName}!`})
-  
+
 //   }
 // })
 app.post("/signup", async (req, res) => {
   try {
-  const users = await userModel.find({username: req.body.username.toLowerCase()});
-  const foundUser = users[0]
-  if(!foundUser) {
-    req.session.access = false
-    
-const sha256Hasher = crypto.createHash("sha256", process.env.cryptoSecret);
-    const user = new userModel({username: req.body.username.toLowerCase(), password: sha256Hasher.update(req.body.password).digest("hex"), banned: false, warn: false, created: Date.now()})
-  await user.save()
-  
-  res.redirect("/login")
-  } else {
-    res.render(__dirname + "/ejs/signup.ejs", {msg: "Our systems just found that this user exists already! Try a new username :)"})
-  }
-} catch{}
+    const users = await userModel.find({ username: req.body.username.toLowerCase() });
+    const foundUser = users[0]
+    if (!foundUser) {
+      req.session.access = false
+
+      const sha256Hasher = crypto.createHash("sha256", process.env.cryptoSecret);
+      const user = new userModel({ username: req.body.username.toLowerCase(), password: sha256Hasher.update(req.body.password).digest("hex"), banned: false, warn: false, created: Date.now() })
+      await user.save()
+
+      res.redirect("/login")
+    } else {
+      res.render(__dirname + "/ejs/signup.ejs", { msg: "Our systems just found that this user exists already! Try a new username :)" })
+    }
+  } catch { }
 })
 
-app.get("/chat", signedin, async function(req, res, next) {
+// app.get("/chat", signedin, async function(req, res, next) {
+//   try {
+//   var messages = await messageModel.find({deleted: false})
+//   res.render(__dirname + "/ejs/chat.ejs", {msgs: messages, usr: req.session.user})
+//   } catch{}
+// })
+app.get("/chat", signedin, async function (req, res, next) {
   try {
-  var messages = await messageModel.find({deleted: false})
-  res.render(__dirname + "/ejs/chat.ejs", {msgs: messages, usr: req.session.user})
-  } catch{}
+    var messages = await messageModel.find({ deleted: false })
+    res.render(__dirname + "/ejs/chat.ejs", { msgs: [{
+       message: "<h1>Welcome to <strong>Spacemessaging</strong>!</h1>", author: "[Owner] Cheslin23t", messageId: -1 },
+        { message: "<h2>Start by <a href='/chat/createDms'>Creating a DM</a>!</h2>", author: "[Owner] Cheslin23t", messageId: -1 
+      }, {message: "<h3>Have fun chatting!</h3>", author: "[Owner] Cheslin23t", messageId: -1}], usr: req.session.user })
+  } catch { }
 })
-
 app.get("/createkey", (req, res) => {
   res.render(__dirname + "/ejs/createKey.ejs")
 })
-app.post("/createkey", async (req, res)=>{
+app.post("/createkey", async (req, res) => {
   try {
-    if(req.body.pass == process.env.OwnerPass){
+    if (req.body.pass == process.env.OwnerPass) {
       const key = uuidv4()
       const newKey = new accessModel({ key: removeDashes(key), valid: true })
       await newKey.save()
-      res.send(key)
+      var Jimp = require("jimp");
+
+      var fileName = __dirname + '/images/spacemsginginvite.png';
+      var imageCaption = key;
+      var loadedImage;
+
+      Jimp.read(fileName)
+        .then(function (image) {
+          loadedImage = image;
+          return Jimp.loadFont(Jimp.FONT_SANS_16_BLACK);
+        })
+        .then(function (font) {
+          loadedImage.print(font, 250, 325, imageCaption, 600, 100)
+            .write(__dirname + '/images/newInvite.png');
+          res.redirect('/images/newInvite.png')
+        })
+        .catch(function (err) {
+          console.error(err);
+        });
+      // res.send(key)
     } else {
       res.send("Nice try.")
     }
-  } catch (errMsg) {console.dir(errMsg)}
+  } catch (errMsg) { console.dir(errMsg) }
 })
 app.get("/login", (req, res) => {
-  res.render(__dirname + "/ejs/login.ejs", {msg: ""})
+  res.render(__dirname + "/ejs/login.ejs", { msg: "" })
 })
-
+app.post('/chat/adddm', async (req, res) => {
+  if(!req.body.username) return
+  const friend = await userModel.find({username: req.body.username})
+  if(!friend[0]) {
+    return res.render(__dirname + "/ejs/createDms.ejs", {msg: "User does not exist."})
+  }
+  // Please ignore the hacky method below
+  const ifDmExists = await dmModel.find({users: [req.session.user, friend[0].username]})
+  const ifDmExists2 = await dmModel.find({users: [friend[0].username, req.session.user]})
+  if(ifDmExists[0] || ifDmExists2[0]) {
+    return res.render(__dirname + "/ejs/createDms.ejs", {msg: "Already created a DM for this user!"})
+  }
+  
+})
 app.post("/login", async (req, res) => {
-const sha256Hasher = crypto.createHash("sha256", process.env.cryptoSecret);
+  const sha256Hasher = crypto.createHash("sha256", process.env.cryptoSecret);
   try {
-  const users = await userModel.find({username: req.body.username.toLowerCase(), password: sha256Hasher.update(req.body.password).digest("hex")});
-  const foundUser = users[0]
-  if(!foundUser) {
-    res.render(__dirname + "/ejs/login.ejs", {msg: "Our systems couldn't find a match for this login! Try again :)"})
-  } else {
-    req.session.user = req.body.username.toLowerCase()
-    res.redirect("/home")
-  } }catch (errMsg) {console.dir(errMsg)}})
+    const users = await userModel.find({ username: req.body.username.toLowerCase(), password: sha256Hasher.update(req.body.password).digest("hex") });
+    const foundUser = users[0]
+    if (!foundUser) {
+      res.render(__dirname + "/ejs/login.ejs", { msg: "Our systems couldn't find a match for this login! Try again :)" })
+    } else {
+      req.session.user = req.body.username.toLowerCase()
+      res.redirect("/home")
+    }
+  } catch (errMsg) { console.dir(errMsg) }
+})
 io.on('connection', (socket) => {
+  const CryptoJS = require('crypto-js');
+
+  const encrypt = (text, secret) => {
+    return CryptoJS.AES.encrypt(text, secret).toString();
+  };
+
+  const decrypt = (data, secret) => {
+    var bytes = CryptoJS.AES.decrypt(data, secret);
+    return bytes.toString(CryptoJS.enc.Utf8);
+  };
+
   let cookieString = socket.request.headers.cookie;
 
-    let req = {connection: {encrypted: false}, headers: {cookie: cookieString}}
-    let res = {getHeader: () =>{}, setHeader: () => {}};
-    //
-    session(req, res, () => {
-         // Do something with req.session
-    
-  console.log("Connected!")
-  socket.on("cliMsg", async (message) => {
-    try {
-    const isAdmin = await userModel.find({username: req.session.user, admin: true, banned: false})
-    if(message.startsWith("!")){
-      const args = message.slice(0).trim().split(/ +/);
-    const cmd = args.shift().toLowerCase();
-    const argsJoined = message.slice(cmd.length + 1)
-      if(cmd == "!eval" && isAdmin[0]){
-        var results
-        try {
-          results = await eval(argsJoined)
-          
-          let msgObj = {message: results, username: "✔️Eval"}
-        io.emit('serverMsg', msgObj)
+  let req = { connection: { encrypted: false }, headers: { cookie: cookieString } }
+  let res = { getHeader: () => { }, setHeader: () => { } };
+  //
+  session(req, res, () => {
+    // Do something with req.session
+
+    console.log("Connected!")
+    socket.on("cliMsg", async (message, dmId) => {
+      if (!req.session.user) return;
+      if (!dmId) return;
+      var dmV = await dmModel.find({ dmId: dmId })
+      if (!dmV[0]) return;
+      if (!dmV[0].users.includes(req.session.user)) return
+      var decryptCode = dmV[0].dmSecret
+
+      try {
+        const isAdmin = await userModel.find({ username: req.session.user, admin: true, banned: false })
+        if (message.startsWith("!")) {
+          const args = message.slice(0).trim().split(/ +/);
+          const cmd = args.shift().toLowerCase();
+          const argsJoined = message.slice(cmd.length + 1)
+          if (cmd == "!eval" && isAdmin[0]) {
+            var results
+            try {
+              results = await eval(argsJoined)
+
+              let msgObj = { message: encrypt(results, decryptCode), username: "✔️Eval" }
+              io.emit('serverMsg', msgObj)
+            }
+            catch (e) {
+              let msgObj = { message: e.toString(), username: "❌Eval" }
+              io.emit('serverMsg', msgObj)
+            }
+
+          }
+        } else {
+
+
+          console.dir(message)
+          var newMessage = md.render(message);
+          console.dir(newMessage)
+          var realMessage = newMessage.substring(0, newMessage.length - 1).replaceAll("\n", "<br />").replaceAll("<p>", "<span>").replaceAll('</p>', '</span>')
+          console.dir(realMessage)
+          var lastMessage = messageModel.find({})
+          var newMsgId = (await lastMessage).length
+
+          let msgObj = { message: customFilter.clean(realMessage), username: req.session.user, messageId: newMsgId }
+          io.emit('serverMsg', msgObj)
+          var newMsg = new messageModel({ message: customFilter.clean(realMessage), author: req.session.user, sent: Date.now(), deleted: false, messageId: newMsgId })
+          await newMsg.save()
         }
-        catch (e) {
-          let msgObj = {message: e.toString(), username: "❌Eval"}
-        io.emit('serverMsg', msgObj)
-        }
-        
-      }
-    } else {
-      
-    
-      console.dir(message)
-var newMessage = md.render(message);
-      console.dir(newMessage)
-      var realMessage = newMessage.substring(0, newMessage.length - 1).replaceAll("\n", "<br />").replaceAll("<p>", "<span>").replaceAll('</p>', '</span>')
-        console.dir(realMessage)
-    var lastMessage = messageModel.find({})
-    var newMsgId = (await lastMessage).length
-    
-    let msgObj = {message: customFilter.clean(realMessage), username: req.session.user, messageId: newMsgId}
-    io.emit('serverMsg', msgObj)
-      var newMsg = new messageModel({message: customFilter.clean(realMessage), author: req.session.user, sent: Date.now(), deleted: false, messageId: newMsgId })
-    await newMsg.save()
-    }} catch (errMsg) {console.dir(errMsg)}
-  });
-  socket.on("delMsg", async (msgId) => {
-    try {
-    var msgs = await messageModel.find({messageId: msgId, deleted: false})
-    var msg = msgs[0]
-    if(!msg) {return};
-    var msgAuthor = msg.author
-    if(msgAuthor !== req.session.user) {return}
-    msg.deleted = true
-   io.emit('serverDelMsg', msgId)
-     await msg.save()
-    
-    } catch (errMsg) {console.dir(errMsg)}
+      } catch (errMsg) { console.dir(errMsg) }
+    });
+    socket.on("delMsg", async (msgId) => {
+      try {
+        var msgs = await messageModel.find({ messageId: msgId, deleted: false })
+        var msg = msgs[0]
+        if (!msg) { return };
+        var msgAuthor = msg.author
+        if (msgAuthor !== req.session.user) { return }
+        msg.deleted = true
+        io.emit('serverDelMsg', msgId)
+        await msg.save()
+
+      } catch (errMsg) { console.dir(errMsg) }
+    })
+    socket.on('disconnect', () => {
+      console.log('Disconnected.');
+    });
   })
-  socket.on('disconnect', () => {
-    console.log('Disconnected.');
-  });
-})
 });
 
 
@@ -315,9 +405,9 @@ io.of("/home").on("connection", (socket) => {
   console.log('hi')
 });
 app.all("*", (req, res) => {
-    res.status(400);
-    res.render(__dirname + "/ejs/errorpage.ejs", {errorCode: "400 Bad Request"});
-   });
+  res.status(400);
+  res.render(__dirname + "/ejs/errorpage.ejs", { errorCode: "400 Bad Request" });
+});
 server.listen(80, () => {
   console.log('listening on localhost');
 })

@@ -319,7 +319,7 @@
         <br>
         <a
       class="u-active-black u-black u-button-style u-nav-link u-text-active-palette-4-base u-text-hover-palette-2-base"
-      href="/chat/friends" style="text-align: center; padding: 26px 54px;">Friends <br> Menu</a>
+      href="/chat/menu" style="text-align: center; padding: 26px 54px;">Menu</a>
     </li>
     
       <ul></ul>
@@ -335,8 +335,6 @@
 
   
 
-
-  <span id="action_menu_btn"><i class="fas fa-ellipsis-v"></i></span>
 
   </div>
   <div style="padding-left: 150px;">
@@ -367,7 +365,7 @@
 
               <div class="msg_cotainer">
                 <%- x.message %>
-                  <span class="msg_time" style="color: black; font-weight: bold;">
+                  <span class="msg_time" style="color: white; font-weight: bold;">
                     <%= x.author %>
                   </span>
               </div>
@@ -380,12 +378,12 @@
   <div class="card-footer" style="background-color: #120b50;">
     <div class="input-group">
       <div class="input-group-append">
-        <span class="input-group-text attach_btn"><i class="fas fa-paperclip" style="padding-left: 150px;"></i></span>
+        <span class="input-group-text attach_btn-disabled"><i class="fas fa-paperclip" style="padding-left: 150px;"></i></span>
       </div>
-      <textarea style="resize: none; overflow: hidden; padding-left: 0px;" id="msgInput" name=""
-        class="form-control type_msg" placeholder="Type your message..."></textarea>
+      <textarea style="resize: none; overflow: hidden; padding-left: 0px; text-align: center;" id="msgInput" name=""
+        class="form-control type_msg-disabled" placeholder="You cannot access this." disabled></textarea>
       <div class="input-group-append">
-        <span id="sendMsgButton" class="input-group-text send_btn"><i class="fas fa-location-arrow"></i></span>
+        <span disabled id="sendMsgButton" class="input-group-text send_btn-disabled"><i class="fas fa-location-arrow"></i></span>
       </div>
     </div>
   </div>
