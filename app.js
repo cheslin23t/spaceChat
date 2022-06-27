@@ -287,9 +287,17 @@ app.post("/createkey", async (req, res) => {
 app.get("/login", (req, res) => {
   res.render(__dirname + "/ejs/login.ejs", { msg: "" })
 })
-app.post('/chat/adddm', async (req, res) => {
+app.post('/chat/adddm', signedin, async (req, res) => {
   if(!req.body.username) return
-  const friend = await userModel.find({username: req.body.username})
+  if(!typeof(req.body.username) == "string") return
+  if(req.session.user == req.body.username.toLowerCase()) {
+    return res.render(__dirname + "/ejs/createDms.ejs", {msg: "You can't create a dm to yourself!"})
+  }
+  const cliUser = await userModel.find({username: req.session.user})
+  const friend = await userModel.find({username: req.body.username.toLowerCase()})
+  if(!cliUser[0]) {
+    return res.redirect("/server-confused")
+  }
   if(!friend[0]) {
     return res.render(__dirname + "/ejs/createDms.ejs", {msg: "User does not exist."})
   }
@@ -301,6 +309,24 @@ app.post('/chat/adddm', async (req, res) => {
   }
   const newDmID = uuidv1()
   const newDm = new dmModel({dmId: newDmID, users: [req.session.user, friend[0].username], dmSecret: uuidv4()})
+  await newDm.save()
+  if(cliUser[0].dms){
+    cliUser[0].dms = cliUser[0].dms.push(newDmID)
+  }
+  else{
+    cliUser[0].dms = new Array().push(newDmID)
+  }
+
+  if(friend[0].dms){
+    friend[0].dms = friend[0].dms.push(newDmID)
+  }
+  else{
+    friend[0].dms = new Array().push(newDmID)
+  }
+  console.dir([newDmID])
+  await cliUser[0].save()
+  await friend[0].save()
+  res.redirect('/chat/dms/' + newDmID)
 })
 app.post("/login", async (req, res) => {
   const sha256Hasher = crypto.createHash("sha256", process.env.cryptoSecret);
