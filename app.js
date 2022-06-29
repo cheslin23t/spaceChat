@@ -81,10 +81,6 @@ const dmModel = mongoose.model("Dms", dmSchema)
 const userModel = mongoose.model("Users", userSchema)
 app.use(session)
 app.set('view engine', 'ejs');
-async function test223() {
-  console.dir(await userModel.findOne({ username: 'test222' }))
-}
-test223()
 function signedin(req, res, next) {
   if (req.session.user) {
     next()
@@ -131,6 +127,20 @@ app.post("/requestaccess", async (req, res) => {
       res.render(__dirname + "/ejs/access.ejs", { msg: "Invalid Key" })
     }
   } catch (errMsg) { console.dir(errMsg) }
+})
+app.get('/chat/dms/:dmId', signedin, async (req, res) => {
+  var urlDmId = req.params.dmId
+  if(!urlDmId){
+    return
+  }
+  var dmDB = await dmModel.find({dmId: urlDmId})
+  if(!dmDB[0]) {
+    return res.redirect('/404')
+  }
+  if(!dmDB[0].users.includes(req.session.user)){
+    return res.redirect('/403')
+  }
+  res.send('nice')
 })
 app.get("/signup", (req, res) => {
 
