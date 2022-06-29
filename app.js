@@ -81,8 +81,8 @@ const dmModel = mongoose.model("Dms", dmSchema)
 const userModel = mongoose.model("Users", userSchema)
 app.use(session)
 app.set('view engine', 'ejs');
-async function test223(){
-  console.dir(await userModel.findOne({username: 'test222'}))
+async function test223() {
+  console.dir(await userModel.findOne({ username: 'test222' }))
 }
 test223()
 function signedin(req, res, next) {
@@ -150,12 +150,19 @@ app.get("/chat/createDms", signedin, (req, res) => {
   res.render(__dirname + "/ejs/createDms.ejs")
 })
 app.get("/chat/dms", signedin, async (req, res) => {
-  function arrayRemove(arr, value) { 
-    
-    return arr.filter(function(ele){ 
-        return ele != value; 
+  function arrayRemove(arr, value) {
+    console.log(value, "eee")
+     var filtered = arr.filter(function(val, index){ 
+        return val == value
     });
-}
+
+    return filtered
+    //     console.log(arr, "eeee")
+    //     const start = arr.indexOf(value);
+    //     console.log(start)
+    // const deleteCount = 1;
+    // return arr.splice(start, deleteCount);
+  }
   const user = await userModel.find({ username: req.session.user })
   if (!user[0]) {
     return
@@ -166,18 +173,36 @@ app.get("/chat/dms", signedin, async (req, res) => {
   else {
     console.log('a')
     var userDms = user[0].dms
-    
+
     var resObj = []
-    userDms.forEach(async (v, i) => {
+      console.dir(userDms)
+    for await (var [i, v] of userDms.entries()){
+      console.log(i, 'eeeee')
+      
       console.log(v)
-      var thisDm = await dmModel.find({dmId: v})
-      if(!thisDm[0]) {return console.dir(v)}
+      var thisDm = await dmModel.find({ dmId: v })
+      //if (!thisDm[0]) { return }
       var dmUsers = thisDm[0].users
-var dmUserName = arrayRemove(dmUsers, req.session.user)
-      resObj[i] = {id: v, username: dmUserName}
-    });
+      var dmUserName
+      if(dmUsers[0] == req.session.user){
+        dmUserName = dmUsers[1]
+      }
+      else if(dmUsers[1] == req.session.user){
+        dmUserName = dmUsers[0]
+      }
+      //else{return}
+      console.log(dmUserName)
+      resObj.push({ id: v, username: dmUserName })
+    }
+
     
+  
+   
+
+    
+    console.log(resObj, 'eeee')
     res.render(__dirname + "/ejs/dms.ejs", { requests: resObj })
+
   }
 })
 app.post("/chat/addDms", signedin, async (req, res) => {
@@ -251,7 +276,7 @@ app.post("/signup", async (req, res) => {
 
       res.redirect("/login")
     } else {
-      res.render(__dirname + "/ejs/signup.ejs", { msg: "Our systems just found that this user exists already! Try a new username :)" })
+      res.render(__dirname + "/ejs/signup.ejs", { msg: "Sorry, someone else chose this username :( Try a new username :)" })
     }
   } catch { }
 })
@@ -265,10 +290,14 @@ app.post("/signup", async (req, res) => {
 app.get("/chat", signedin, async function (req, res, next) {
   try {
     var messages = await messageModel.find({ deleted: false })
-    res.render(__dirname + "/ejs/chat.ejs", { msgs: [{
-       message: "<h1>Welcome to <strong>Spacemessaging</strong>!</h1>", author: "[Owner] Cheslin23t", messageId: -1 },
-        { message: "<h2>Start by <a href='/chat/createDms'>Creating a DM</a>!</h2>", author: "[Owner] Cheslin23t", messageId: -1 
-      }, {message: "<h3>Have fun chatting!</h3>", author: "[Owner] Cheslin23t", messageId: -1}], usr: req.session.user })
+    res.render(__dirname + "/ejs/chat.ejs", {
+      msgs: [{
+        message: "<h1>Welcome to <strong>Spacemessaging</strong>!</h1>", author: "[Owner] Cheslin23t", messageId: -1
+      },
+      {
+        message: "<h2>Start by <a href='/chat/createDms'>Creating a DM</a>!</h2>", author: "[Owner] Cheslin23t", messageId: -1
+      }, { message: "<h3>Have fun chatting!</h3>", author: "[Owner] Cheslin23t", messageId: -1 }], usr: req.session.user
+    })
   } catch { }
 })
 app.get("/createkey", (req, res) => {
@@ -309,35 +338,35 @@ app.get("/login", (req, res) => {
   res.render(__dirname + "/ejs/login.ejs", { msg: "" })
 })
 app.post('/chat/adddm', signedin, async (req, res) => {
-  if(!req.body.username) return
-  if(!typeof(req.body.username) == "string") return
-  if(req.session.user == req.body.username.toLowerCase()) {
-    return res.render(__dirname + "/ejs/createDms.ejs", {msg: "You can't create a dm to yourself!"})
+  if (!req.body.username) return
+  if (!typeof (req.body.username) == "string") return
+  if (req.session.user == req.body.username.toLowerCase()) {
+    return res.render(__dirname + "/ejs/createDms.ejs", { msg: "You can't create a dm to yourself!" })
   }
-  const cliUser = await userModel.find({username: req.session.user})
-  const friend = await userModel.find({username: req.body.username.toLowerCase()})
-  if(!cliUser[0]) {
+  const cliUser = await userModel.find({ username: req.session.user })
+  const friend = await userModel.find({ username: req.body.username.toLowerCase() })
+  if (!cliUser[0]) {
     return res.redirect("/server-confused")
   }
-  if(!friend[0]) {
-    return res.render(__dirname + "/ejs/createDms.ejs", {msg: "User does not exist."})
+  if (!friend[0]) {
+    return res.render(__dirname + "/ejs/createDms.ejs", { msg: "We couldn't find this user!" })
   }
   // Please ignore the hacky method below
-  const ifDmExists = await dmModel.find({users: [req.session.user, friend[0].username]})
-  const ifDmExists2 = await dmModel.find({users: [friend[0].username, req.session.user]})
-  if(ifDmExists[0] || ifDmExists2[0]) {
-    return res.render(__dirname + "/ejs/createDms.ejs", {msg: "Already created a DM for this user!"})
+  const ifDmExists = await dmModel.find({ users: [req.session.user, friend[0].username] })
+  const ifDmExists2 = await dmModel.find({ users: [friend[0].username, req.session.user] })
+  if (ifDmExists[0] || ifDmExists2[0]) {
+    return res.render(__dirname + "/ejs/createDms.ejs", { msg: "You are already in a DM with this user!" })
   }
   const newDmID = uuidv1()
-  const newDm = new dmModel({dmId: newDmID, users: [req.session.user, friend[0].username], dmSecret: uuidv4()})
+  const newDm = new dmModel({ dmId: newDmID, users: [req.session.user, friend[0].username], dmSecret: uuidv4() })
   await newDm.save()
-  
+
   var x = friend[0].dms
   var y = cliUser[0].dms
-  x = ( typeof x != 'undefined' && x instanceof Array ) ? x : []
+  x = (typeof x != 'undefined' && x instanceof Array) ? x : []
   x = x.push(newDmID)
 
-  y = ( typeof y != 'undefined' && y instanceof Array ) ? y : []
+  y = (typeof y != 'undefined' && y instanceof Array) ? y : []
   y = y.push(newDmID)
   await cliUser[0].save()
   await friend[0].save()
