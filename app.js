@@ -81,7 +81,10 @@ const dmModel = mongoose.model("Dms", dmSchema)
 const userModel = mongoose.model("Users", userSchema)
 app.use(session)
 app.set('view engine', 'ejs');
-
+async function test223(){
+  console.dir(await userModel.findOne({username: 'test222'}))
+}
+test223()
 function signedin(req, res, next) {
   if (req.session.user) {
     next()
@@ -147,6 +150,12 @@ app.get("/chat/createDms", signedin, (req, res) => {
   res.render(__dirname + "/ejs/createDms.ejs")
 })
 app.get("/chat/dms", signedin, async (req, res) => {
+  function arrayRemove(arr, value) { 
+    
+    return arr.filter(function(ele){ 
+        return ele != value; 
+    });
+}
   const user = await userModel.find({ username: req.session.user })
   if (!user[0]) {
     return
@@ -155,8 +164,20 @@ app.get("/chat/dms", signedin, async (req, res) => {
     res.render(__dirname + "/ejs/dms.ejs", { requests: [] })
   }
   else {
-
-    res.render(__dirname + "/ejs/dms.ejs", { requests: user[0].dms })
+    console.log('a')
+    var userDms = user[0].dms
+    
+    var resObj = []
+    userDms.forEach(async (v, i) => {
+      console.log(v)
+      var thisDm = await dmModel.find({dmId: v})
+      if(!thisDm[0]) {return console.dir(v)}
+      var dmUsers = thisDm[0].users
+var dmUserName = arrayRemove(dmUsers, req.session.user)
+      resObj[i] = {id: v, username: dmUserName}
+    });
+    
+    res.render(__dirname + "/ejs/dms.ejs", { requests: resObj })
   }
 })
 app.post("/chat/addDms", signedin, async (req, res) => {
@@ -310,20 +331,14 @@ app.post('/chat/adddm', signedin, async (req, res) => {
   const newDmID = uuidv1()
   const newDm = new dmModel({dmId: newDmID, users: [req.session.user, friend[0].username], dmSecret: uuidv4()})
   await newDm.save()
-  if(cliUser[0].dms){
-    cliUser[0].dms = cliUser[0].dms.push(newDmID)
-  }
-  else{
-    cliUser[0].dms = new Array().push(newDmID)
-  }
+  
+  var x = friend[0].dms
+  var y = cliUser[0].dms
+  x = ( typeof x != 'undefined' && x instanceof Array ) ? x : []
+  x = x.push(newDmID)
 
-  if(friend[0].dms){
-    friend[0].dms = friend[0].dms.push(newDmID)
-  }
-  else{
-    friend[0].dms = new Array().push(newDmID)
-  }
-  console.dir([newDmID])
+  y = ( typeof y != 'undefined' && y instanceof Array ) ? y : []
+  y = y.push(newDmID)
   await cliUser[0].save()
   await friend[0].save()
   res.redirect('/chat/dms/' + newDmID)

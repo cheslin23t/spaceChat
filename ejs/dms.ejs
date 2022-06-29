@@ -650,9 +650,9 @@ a.button5:hover{
                 <main class="leaderboard__profiles">
                     <% if(requests){ for(var i=0; i < requests.length; i++) { %>
                         <article class="leaderboard__profile">
-                            <span class="leaderboard__name" ><%= requests[i].name %></span>
+                            <span class="leaderboard__name" ><%= requests[i].username %></span>
                             <div style="align-content: right;">
-                                <a href="/dm/<%= requests[i].id %>" class="button5">Open</a>
+                                <a href="/chat/dms/<%= requests[i].id %>" class="button5">Open</a>
                                 </div>
                         </article>
                      <% }} %>
