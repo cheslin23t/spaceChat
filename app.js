@@ -62,7 +62,6 @@ const dmSchema = new mongoose.Schema({
 })
 const messageSchema = new mongoose.Schema({
   message: String,
-  for: String,
   created: Date,
   author: String,
   deleted: Boolean,
@@ -79,6 +78,18 @@ const messageModel = mongoose.model("messages", messageSchema)
 const accessModel = mongoose.model("AccessKeys", accessSchema)
 const dmModel = mongoose.model("Dms", dmSchema)
 const userModel = mongoose.model("Users", userSchema)
+// async function asyncFunc(){
+// for (const element of await dmModel.find({})) {
+//   element.messages = [{
+//     message: '<h3>Channel Created!</h3>',
+//     author: '[System]',
+//     messageId: -1
+//   }]
+//   await element.save()
+//   console.log('done')
+// }
+// }
+// asyncFunc()
 app.use(session)
 app.set('view engine', 'ejs');
 function signedin(req, res, next) {
@@ -89,6 +100,7 @@ function signedin(req, res, next) {
     res.render(__dirname + "/ejs/lockscreen.ejs")
   }
 }
+
 app.use("/images", express.static('images'))
 app.use("/css", express.static('css'))
 app.use("/js", express.static('js'))
@@ -140,7 +152,10 @@ app.get('/chat/dms/:dmId', signedin, async (req, res) => {
   if(!dmDB[0].users.includes(req.session.user)){
     return res.redirect('/403')
   }
-  res.send('nice')
+  
+  var messages = dmDB[0].messages
+  res.render(__dirname + "/ejs/groupChat.ejs", {msgs: messages, usr: req.session.user, dmId: dmDB[0].dmId, dmSecret: dmDB[0].dmSecret})
+
 })
 app.get("/signup", (req, res) => {
 
@@ -215,19 +230,19 @@ app.get("/chat/dms", signedin, async (req, res) => {
 
   }
 })
-app.post("/chat/addDms", signedin, async (req, res) => {
-  var dmUser = req.body.username
-  if (!dmUser) {
-    return
-  }
-  var dmUserV = await userModel.find({ username: dmUser })
-  if (!dmUserV[0]) {
-    return res.render(__dirname + "/ejs/createDms.ejs", { errorMessage: "User not found." })
-  }
-  else {
+// app.post("/chat/addDms", signedin, async (req, res) => {
+//   var dmUser = req.body.username
+//   if (!dmUser) {
+//     return
+//   }
+//   var dmUserV = await userModel.find({ username: dmUser })
+//   if (!dmUserV[0]) {
+//     return res.render(__dirname + "/ejs/createDms.ejs", { errorMessage: "User not found." })
+//   }
+//   else {
 
-  }
-})
+//   }
+// })
 // app.get("/chat/requests",signedin, async(req, res) => {
 //   var User = await userModel.find({username: req.session.user})
 //   if(!User[0]){
@@ -368,7 +383,11 @@ app.post('/chat/adddm', signedin, async (req, res) => {
     return res.render(__dirname + "/ejs/createDms.ejs", { msg: "You are already in a DM with this user!" })
   }
   const newDmID = uuidv1()
-  const newDm = new dmModel({ dmId: newDmID, users: [req.session.user, friend[0].username], dmSecret: uuidv4() })
+  const newDm = new dmModel({ dmId: newDmID, users: [req.session.user, friend[0].username], dmSecret: uuidv4(), messages: [{
+    message: '<h3>Channel Created!</h3>',
+    author: '[System]',
+    messageId: -1
+  }] })
   await newDm.save()
 
   var x = friend[0].dms
