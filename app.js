@@ -10,6 +10,16 @@ app.all("*", (req, res, next) => {
 
   next()
 })
+const CryptoJS = require('crypto-js');
+
+  const encrypt = (text, secret) => {
+    return CryptoJS.AES.encrypt(text, secret).toString();
+  };
+
+  const decrypt = (data, secret) => {
+    var bytes = CryptoJS.AES.decrypt(data, secret);
+    return bytes.toString(CryptoJS.enc.Utf8);
+  };
 require('dotenv').config()
 const { v4: uuidv4, v1: uuidv1 } = require('uuid');
 //const bodyParser = require('body-parser')
@@ -104,6 +114,7 @@ function signedin(req, res, next) {
 app.use("/images", express.static('images'))
 app.use("/css", express.static('css'))
 app.use("/js", express.static('js'))
+app.use("/bower_components", express.static('bower_components'))
 app.get('/home', (req, res) => {
   res.render(__dirname + "/ejs/home.ejs")
 })
@@ -154,6 +165,10 @@ app.get('/chat/dms/:dmId', signedin, async (req, res) => {
   }
   
   var messages = dmDB[0].messages
+  for await (var [i, v] of messages.entries()){
+    console.log(decrypt(messages[i].message, dmDB[0].dmSecret))
+    messages[i].message = decrypt(messages[i].message, dmDB[0].dmSecret)
+  }
   res.render(__dirname + "/ejs/groupChat.ejs", {msgs: messages, usr: req.session.user, dmId: dmDB[0].dmId, dmSecret: dmDB[0].dmSecret})
 
 })
@@ -415,16 +430,7 @@ app.post("/login", async (req, res) => {
   } catch (errMsg) { console.dir(errMsg) }
 })
 io.on('connection', (socket) => {
-  const CryptoJS = require('crypto-js');
-
-  const encrypt = (text, secret) => {
-    return CryptoJS.AES.encrypt(text, secret).toString();
-  };
-
-  const decrypt = (data, secret) => {
-    var bytes = CryptoJS.AES.decrypt(data, secret);
-    return bytes.toString(CryptoJS.enc.Utf8);
-  };
+  
 
   let cookieString = socket.request.headers.cookie;
 
@@ -458,26 +464,28 @@ io.on('connection', (socket) => {
               io.emit('serverMsg', msgObj)
             }
             catch (e) {
-              let msgObj = { message: e.toString(), username: "❌Eval" }
+              let msgObj = { message: encrypt(e.toString(), decryptCode), username: "❌Eval" }
               io.emit('serverMsg', msgObj)
             }
 
           }
         } else {
 
-
+          
           console.dir(message)
           var newMessage = md.render(message);
           console.dir(newMessage)
           var realMessage = newMessage.substring(0, newMessage.length - 1).replaceAll("\n", "<br />").replaceAll("<p>", "<span>").replaceAll('</p>', '</span>')
           console.dir(realMessage)
-          var lastMessage = messageModel.find({})
-          var newMsgId = (await lastMessage).length
+          var lastMessage = dmV[0].messages.length + 1
 
-          let msgObj = { message: customFilter.clean(realMessage), username: req.session.user, messageId: newMsgId }
-          io.emit('serverMsg', msgObj)
-          var newMsg = new messageModel({ message: customFilter.clean(realMessage), author: req.session.user, sent: Date.now(), deleted: false, messageId: newMsgId })
-          await newMsg.save()
+          let msgObj = { message: encrypt(realMessage, decryptCode), username: req.session.user, messageId: lastMessage }
+          Obj = { message: customFilter.clean(realMessage), username: req.session.user, messageId: lastMessage }
+          io.emit('serverMsg', msgObj, dmV[0].dmId)
+          var saveDmV = ({ message: encrypt(customFilter.clean(realMessage), decryptCode), author: req.session.user, sent: Date.now(), deleted: false, messageId: lastMessage })
+          
+          dmV[0].messages.push(msgObj)
+          await dmV[0].save()
         }
       } catch (errMsg) { console.dir(errMsg) }
     });

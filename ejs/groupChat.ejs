@@ -4,7 +4,7 @@
     <script>
       var socket = io();
       function sendMessage(message) {
-        socket.volatile.emit("cliMsg", message);
+        socket.volatile.emit("cliMsg", message, '<%= dmId %>');
       }
       function deleteMsg(msgId) {
         console.log(msgId)
@@ -30,6 +30,8 @@
         cursor: pointer;
       }
     </style>
+    
+    <script type="text/javascript" src="/bower_components/crypto-js/crypto-js.js"></script>
     <script src=
   "https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js">
       </script>
@@ -43,6 +45,13 @@
           });
       </script>
     <script>
+      
+       const decrypt = (data, secret) => {
+        console.dir(data)
+        console.dir(secret)
+    var bytes = CryptoJS.AES.decrypt(data, secret);
+    return bytes.toString(CryptoJS.enc.Utf8);
+  };
       window.addEventListener('load', function () {
         // your code here
   
@@ -72,8 +81,11 @@
         });
       })
   
-      socket.on("serverMsg", (msg) => {
-        console.log(msg)
+      socket.on("serverMsg", (msg, id) => {
+        if(id !== "<%= dmId %>") {
+          return
+        }
+        msg.message = decrypt(msg.message, '<%= dmSecret %>')
         if (msg.username == "<%= usr %>") {
           var item = document.getElementById("msgs");
           item.innerHTML = item.innerHTML + `
@@ -292,7 +304,7 @@
   
       <% for( let index=0; index < msgs.length; index++ ) { %>
         <% let x=msgs[index] %>
-          <% if(x.author==usr) {%>
+          <% if(x.usernaame==usr) {%>
   
             <div class="d-flex justify-content-end mb-4" id=<%= x.messageId %>>
               <div class="msg_cotainer_send">
@@ -316,7 +328,7 @@
                 <div class="msg_cotainer">
                   <%- x.message %>
                     <span class="msg_time" style="color: white; font-weight: bold;">
-                      <%= x.author %>
+                      <%= x.username %>
                     </span>
                 </div>
               
