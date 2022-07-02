@@ -68,7 +68,7 @@ const dmSchema = new mongoose.Schema({
   users: Array,
   dmId: String,
   dmSecret: String,
-  messages: Array
+  messages: Array,
 })
 const messageSchema = new mongoose.Schema({
   message: String,
@@ -90,14 +90,11 @@ const dmModel = mongoose.model("Dms", dmSchema)
 const userModel = mongoose.model("Users", userSchema)
 // async function asyncFunc(){
 // for (const element of await dmModel.find({})) {
-//   element.messages = [{
-//     message: '<h3>Channel Created!</h3>',
-//     author: '[System]',
-//     messageId: -1
-//   }]
-//   await element.save()
+//   var dmid = element
+  
 //   console.log('done')
 // }
+// dmModel.remove({})
 // }
 // asyncFunc()
 app.use(session)
@@ -398,10 +395,11 @@ app.post('/chat/adddm', signedin, async (req, res) => {
     return res.render(__dirname + "/ejs/createDms.ejs", { msg: "You are already in a DM with this user!" })
   }
   const newDmID = uuidv1()
-  const newDm = new dmModel({ dmId: newDmID, users: [req.session.user, friend[0].username], dmSecret: uuidv4(), messages: [{
-    message: '<h3>Channel Created!</h3>',
-    author: '[System]',
-    messageId: -1
+  const newDmSecret = uuidv4()
+  const newDm = new dmModel({ dmId: newDmID, users: [req.session.user, friend[0].username], dmSecret: newDmSecret, messages: [{
+    message: encrypt('<h3>Channel Created!</h3>', newDmSecret),
+    username: '[System]',
+    messageId: 1
   }] })
   await newDm.save()
 
@@ -489,16 +487,45 @@ io.on('connection', (socket) => {
         }
       } catch (errMsg) { console.dir(errMsg) }
     });
-    socket.on("delMsg", async (msgId) => {
+    socket.on("delMsg", async (msgId, dmId) => {
+      function search(nameKey, myArray){
+        for (var i=0; i < myArray.length; i++) {
+            if (myArray[i].messageId === nameKey) {
+                return myArray[i];
+            }
+        }
+    }
+    function searchForAuthor(nameKey, myArray){
+      for (var i=0; i < myArray.length; i++) {
+          if (myArray[i].username === nameKey) {
+              return myArray[i];
+          }
+      }
+  }
+  
       try {
-        var msgs = await messageModel.find({ messageId: msgId, deleted: false })
-        var msg = msgs[0]
-        if (!msg) { return };
-        var msgAuthor = msg.author
-        if (msgAuthor !== req.session.user) { return }
-        msg.deleted = true
-        io.emit('serverDelMsg', msgId)
-        await msg.save()
+        
+        var dmV = await dmModel.find({ dmId: dmId })
+        if (!dmV[0]) return;
+        if (!dmV[0].users.includes(req.session.user)) return
+
+        
+        if(!search(msgId, dmV[0].messages)) return;
+        var msgAuthor = searchForAuthor(req.session.user, dmV[0].messages)
+        if (!msgAuthor) { return }
+        console.dir(msgId-1)
+        console.dir(dmV[0].messages)
+        console.dir(dmV[0].messages[msgId - 1])
+        const newObj = {
+          message: dmV[0].messages[msgId - 1].message,
+          username: dmV[0].messages[msgId - 1].username,
+          messageId: dmV[0].messages[msgId - 1].messageId,
+          deleted: true
+        }
+        dmV[0].messages[msgId - 1] = newObj
+
+        io.emit('serverDelMsg', msgId, dmId)
+        await dmV[0].save()
 
       } catch (errMsg) { console.dir(errMsg) }
     })

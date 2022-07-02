@@ -7,8 +7,8 @@
         socket.volatile.emit("cliMsg", message, '<%= dmId %>');
       }
       function deleteMsg(msgId) {
-        console.log(msgId)
-        socket.volatile.emit("delMsg", msgId);
+        console.log(msgId);
+        socket.volatile.emit("delMsg", msgId, '<%= dmId %>');
       }
     </script>
     
@@ -121,7 +121,10 @@
           window.scrollTo(0, document.body.scrollHeight);
         }
       })
-      socket.on("serverDelMsg", (msgId) => {
+      socket.on("serverDelMsg", (msgId, dmId) => {
+        if(dmId !== "<%= dmId %>") {
+          return
+        }
         var msg = document.getElementById(msgId)
         msg.remove()
       })
@@ -304,7 +307,9 @@
   
       <% for( let index=0; index < msgs.length; index++ ) { %>
         <% let x=msgs[index] %>
-          <% if(x.usernaame==usr) {%>
+        <% if (!x.deleted)  {%>
+
+          <% if(x.username==usr) {%>
   
             <div class="d-flex justify-content-end mb-4" id=<%= x.messageId %>>
               <div class="msg_cotainer_send">
@@ -334,6 +339,7 @@
               
               <br>
             </div>
+              <% } %>
               <% } %>
                 <% } %>
     </div><div>
