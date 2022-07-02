@@ -2,4 +2,8 @@
 .env
 .replit
 replit.nix
+<<<<<<< Updated upstream
 package-lock.json
+=======
+package-lock.json
+>>>>>>> Stashed changes
