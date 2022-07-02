@@ -1,0 +1,362 @@
+<head>
+    <script src="/socket.io/socket.io.js"></script>
+    <link rel="stylesheet" href="/css/space.css" media="screen">
+    <script>
+      var socket = io();
+      function sendMessage(message) {
+        socket.volatile.emit("cliMsg", message, '<%= dmId %>');
+      }
+      function deleteMsg(msgId) {
+        console.log(msgId);
+        socket.volatile.emit("delMsg", msgId, '<%= dmId %>');
+      }
+    </script>
+    
+    <style>
+      .deleteButton {
+        background: red;
+        height: 2.3rem;
+        border-radius: 25rem;
+        border: 2px solid black;
+        cursor: pointer;
+        z-index: 50;
+      }
+  
+      .deleteButton:hover {
+        background: rgb(255, 174, 0);
+        height: 2.3rem;
+        border-radius: 25rem;
+        border: 2px solid black;
+        cursor: pointer;
+      }
+    </style>
+    
+    <script type="text/javascript" src="/bower_components/crypto-js/crypto-js.js"></script>
+    <script src=
+  "https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js">
+      </script>
+    
+      <!-- jQuery code to show the working of this method -->
+      <script>
+          $(document).ready(function() {
+              
+                  $(document).scrollTop($(document).height());
+              
+          });
+      </script>
+    <script>
+      
+       const decrypt = (data, secret) => {
+        console.dir(data)
+        console.dir(secret)
+    var bytes = CryptoJS.AES.decrypt(data, secret);
+    return bytes.toString(CryptoJS.enc.Utf8);
+  };
+      window.addEventListener('load', function () {
+        // your code here
+  
+        const ele = document.getElementById('msgInput');
+  
+        ele.addEventListener('keydown', function (e) {
+          // Get the code of pressed key
+          const keyCode = e.which || e.keyCode;
+  
+          // 13 represents the Enter key
+          if (keyCode === 13 && !e.shiftKey) {
+            // Don't generate a new line
+            e.preventDefault();
+            if (ele.value !== "") {
+              sendMessage(ele.value)
+              ele.value = ""
+            }
+  
+          }
+  
+          document.getElementById("sendMsgButton").onclick = function (e) {
+            if (ele.value !== "") {
+              sendMessage(ele.value)
+              ele.value = ""
+            }
+          }
+        });
+      })
+  
+      socket.on("serverMsg", (msg, id) => {
+        if(id !== "<%= dmId %>") {
+          return
+        }
+        msg.message = decrypt(msg.message, '<%= dmSecret %>')
+        if (msg.username == "<%= usr %>") {
+          var item = document.getElementById("msgs");
+          item.innerHTML = item.innerHTML + `
+            <div class="d-flex justify-content-end mb-4" id=${msg.messageId}>
+              <div class="msg_cotainer_send">
+                ${msg.message}
+                  <span class="msg_time_send" style="font-weight: bold;">You</span>
+              </div>
+  
+              <div class="img_cont_msg">
+                <img src="/images/user-icon.png" style="background-color: yellowgreen;"
+                  class="rounded-circle user_img_msg">
+              </div>&nbsp;&nbsp;&nbsp;<button class="deleteButton" onclick="deleteMsg(${msg.messageId})">🗑️</button>
+            </div>`;
+  
+          window.scrollTo(0, document.body.scrollHeight);
+  
+        }
+        else {
+          var item = document.getElementById("msgs");
+          item.innerHTML = item.innerHTML + `<div class="d-flex justify-content-start mb-4" id=${msg.messageId}>
+                      
+                      <div class="img_cont_msg">
+                        <img src="/images/user-icon.png" class="rounded-circle user_img_msg" style="background-color: cyan">
+                      </div>
+                      
+                      <div class="msg_cotainer">
+                        ${msg.message}
+                        <span class="msg_time" style="color: black; font-weight: bold;">${msg.username}</span>
+                      </div>
+                    </div>`;
+  
+          window.scrollTo(0, document.body.scrollHeight);
+        }
+      })
+      socket.on("serverDelMsg", (msgId, dmId) => {
+        if(dmId !== "<%= dmId %>") {
+          return
+        }
+        var msg = document.getElementById(msgId)
+        msg.remove()
+      })
+    </script>
+    <style>
+      /* Config */
+      /* mixins */
+      /* Styles */
+      html,
+      body {
+        height: 100%;
+      }
+  
+      .page-bg,
+      .animation-wrapper {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+      }
+  
+      .page-bg {
+        background: #1e1e1e;
+        background-blend-mode: screen;
+        background-size: cover;
+        filter: grayscale(100%);
+        z-index: -1;
+      }
+  
+      .particle,
+      .particle:after {
+        background: transparent;
+      }
+  
+      .particle:after {
+        position: absolute;
+        content: "";
+        top: 2560px;
+      }
+  
+      .sidenav {
+        height: 100%;
+        width: 160px;
+        position: fixed;
+        z-index: 1;
+        top: 0;
+        left: 0;
+        background-color: #111;
+        overflow-x: hidden;
+        padding-top: 20px;
+      }
+  
+      
+  
+      @keyframes animParticle {
+        from {
+          transform: translateY(0px);
+        }
+  
+        to {
+          transform: translateY(-2560px);
+        }
+      }
+  
+      .page-wrapper {
+        text-align: center;
+        color: #fff;
+        z-index: 2;
+      }
+  
+      h4 {
+        color: #fff;
+        font-family: Monoton;
+        -webkit-animation: neon1 1.5s ease-in-out infinite alternate;
+        -moz-animation: neon1 1.5s ease-in-out infinite alternate;
+        animation: neon1 1.5s ease-in-out infinite alternate;
+      }
+  
+      h4:hover {
+        color: #ff1177;
+        -webkit-animation: none;
+        -moz-animation: none;
+        animation: none;
+      }
+  
+      /*glow for webkit*/
+      @-webkit-keyframes neon1 {
+        from {
+          text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #fff, 0 0 40px #ff1177, 0 0 70px #ff1177, 0 0 80px #ff1177, 0 0 100px #ff1177, 0 0 150px #ff1177;
+        }
+  
+        to {
+          text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #fff, 0 0 20px #ff1177, 0 0 35px #ff1177, 0 0 40px #ff1177, 0 0 50px #ff1177, 0 0 75px #ff1177;
+        }
+      }
+  
+      /*glow for mozilla*/
+      @-moz-keyframes neon1 {
+        from {
+          text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #fff, 0 0 40px #ff1177, 0 0 70px #ff1177, 0 0 80px #ff1177, 0 0 100px #ff1177, 0 0 150px #ff1177;
+        }
+  
+        to {
+          text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #fff, 0 0 20px #ff1177, 0 0 35px #ff1177, 0 0 40px #ff1177, 0 0 50px #ff1177, 0 0 75px #ff1177;
+        }
+      }
+  
+      /*glow*/
+      @keyframes neon1 {
+        from {
+          text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #fff, 0 0 40px #ff1177, 0 0 70px #ff1177, 0 0 80px #ff1177, 0 0 100px #ff1177, 0 0 150px #ff1177;
+        }
+  
+        to {
+          text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #fff, 0 0 20px #ff1177, 0 0 35px #ff1177, 0 0 40px #ff1177, 0 0 50px #ff1177, 0 0 75px #ff1177;
+        }
+      }
+    </style>
+    <link rel="stylesheet" href="/css/home.css" media="screen">
+    <link rel="stylesheet" href="/css/maincss.css" media="screen">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8">
+    <script src="/js/chat.js"></script>
+    <script class="u-script" type="text/javascript" src="/js/jquery.js" defer=""></script>
+    <script class="u-script" type="text/javascript" src="/js/mainjs.js" defer=""></script>
+    <link id="u-theme-google-font" rel="stylesheet"
+      href="https://fonts.googleapis.com/css?family=Roboto:100,100i,300,300i,400,400i,500,500i,700,700i,900,900i|Open+Sans:300,300i,400,400i,500,500i,600,600i,700,700i,800,800i">
+    <title>Chat</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+      integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/groupchat.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css"
+      integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js">
+      $(document).ready(function () {
+        
+        $('#action_menu_btn').click(function () {
+          $('.action_menu').toggle();
+        });
+        
+      });</script>
+    <link rel="stylesheet" type="text/css"
+      href="https://cdnjs.cloudflare.com/ajax/libs/malihu-custom-scrollbar-plugin/3.1.5/jquery.mCustomScrollbar.min.css">
+    <script type="text/javascript"
+      src="https://cdnjs.cloudflare.com/ajax/libs/malihu-custom-scrollbar-plugin/3.1.5/jquery.mCustomScrollbar.min.js"></script>
+  </head>
+  
+  <body data-home-page="Home.html" data-home-page-title="Home" class="u-body u-xl-mode"
+    style="background-color: #120b50;">
+  
+    <div class="sidenav">
+      <ul class="u-nav u-unstyled u-nav-1">
+        <li class="u-nav-item"><a
+          class="u-active-black u-black u-button-style u-nav-link u-text-active-palette-4-base u-text-hover-palette-2-base"
+          href="/chat" style="padding: 26px 54px;">Home</a>
+          <br>
+          <a
+        class="u-active-black u-black u-button-style u-nav-link u-text-active-palette-4-base u-text-hover-palette-2-base"
+        href="/chat/menu" style="text-align: center; padding: 26px 54px;">Menu</a>
+      </li>
+      
+        <ul></ul>
+    </div>
+    <div class="page-bg" style="background-color: #120b50;"></div>
+  
+    <div class="animation-wrapper">
+      <div class="particle particle-1"></div>
+      <div class="particle particle-2"></div>
+      <div class="particle particle-3"></div>
+      <div class="particle particle-4"></div>
+    </div>
+  
+    
+  
+  
+    </div>
+    <div style="padding-left: 150px;">
+    <div class="card-body msg_card_body" style="background-color: #120b50;" id="msgs">
+  
+      <% for( let index=0; index < msgs.length; index++ ) { %>
+        <% let x=msgs[index] %>
+        <% if (!x.deleted)  {%>
+
+          <% if(x.username==usr) {%>
+  
+            <div class="d-flex justify-content-end mb-4" id=<%= x.messageId %>>
+              <div class="msg_cotainer_send">
+                <%- x.message %>
+                  <span class="msg_time_send" style="font-weight: bold;">You</span>
+              </div>
+  
+              <div class="img_cont_msg">
+                <img src="/images/user-icon.png" style="background-color: yellowgreen;"
+                  class="rounded-circle user_img_msg">
+              </div>&nbsp;&nbsp;&nbsp;<button class="deleteButton" onclick="deleteMsg(Number('<%= x.messageId %>'))">🗑️</button>
+            </div>
+            <% } else { %>
+              
+              <div class="d-flex justify-content-start mb-4">
+  
+                <div class="img_cont_msg">
+                  <img src="/images/user-icon.png" class="rounded-circle user_img_msg" style="background-color: cyan">
+                </div>
+  
+                <div class="msg_cotainer">
+                  <%- x.message %>
+                    <span class="msg_time" style="color: white; font-weight: bold;">
+                      <%= x.username %>
+                    </span>
+                </div>
+              
+              <br>
+            </div>
+              <% } %>
+              <% } %>
+                <% } %>
+    </div><div>
+    <div class="card-footer" style="background-color: #120b50;">
+      <div class="input-group">
+        <div class="input-group-append">
+          <span class="input-group-text attach_btn"><i class="fas fa-paperclip" style="padding-left: 150px;"></i></span>
+        </div>
+        <textarea style="resize: none; overflow: hidden; padding-left: 0px; text-align: center;" id="msgInput" name=""
+          class="form-control type_msg" placeholder="Send a message to this room"></textarea>
+        <div class="input-group-append">
+          <span id="sendMsgButton" class="input-group-text send_btn"><i class="fas fa-location-arrow"></i></span>
+        </div>
+      </div>
+    </div>
+    </div>
+    </div>
+    </div>
+    </div>
+  </body>
