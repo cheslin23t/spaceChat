@@ -3,3 +3,4 @@
 .replit
 replit.nix
 package-lock.json
+/bower_components
