@@ -2,12 +2,5 @@
 .env
 .replit
 replit.nix
-<<<<<<< Updated upstream
 package-lock.json
-<<<<<<< HEAD
-=======
-package-lock.json
->>>>>>> Stashed changes
-=======
 /bower_components
->>>>>>> a2373882d28d53c1ea5c64d6aa11cf03fb61060d
