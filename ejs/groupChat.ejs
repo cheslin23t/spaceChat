@@ -1,7 +1,15 @@
 <head>
+  
     <script src="/socket.io/socket.io.js"></script>
     <link rel="stylesheet" href="/css/space.css" media="screen">
     <script>
+      function confirmm(msgId) {
+  
+  if (confirm("Are you sure you want to delete this message? \n This action cannot be undone.") == true) {
+   deleteMsg(msgId);
+  }
+  document.getElementById("demo").innerHTML = text;
+}
       var socket = io();
       function sendMessage(message) {
         socket.volatile.emit("cliMsg", message, '<%= dmId %>');
@@ -98,7 +106,7 @@
               <div class="img_cont_msg">
                 <img src="/images/user-icon.png" style="background-color: yellowgreen;"
                   class="rounded-circle user_img_msg">
-              </div>&nbsp;&nbsp;&nbsp;<button class="deleteButton" onclick="deleteMsg(${msg.messageId})">🗑️</button>
+              </div>&nbsp;&nbsp;&nbsp;<button class="deleteButton" onclick="confirmm(${msg.messageId})">🗑️</button>
             </div>`;
   
           window.scrollTo(0, document.body.scrollHeight);
@@ -320,7 +328,7 @@
               <div class="img_cont_msg">
                 <img src="/images/user-icon.png" style="background-color: yellowgreen;"
                   class="rounded-circle user_img_msg">
-              </div>&nbsp;&nbsp;&nbsp;<button class="deleteButton" onclick="deleteMsg(Number('<%= x.messageId %>'))">🗑️</button>
+              </div>&nbsp;&nbsp;&nbsp;<button class="deleteButton" onclick="confirmm(<%= x.messageId %>)">🗑️</button>
             </div>
             <% } else { %>
               
