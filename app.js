@@ -343,7 +343,30 @@ app.get("/createkey", (req, res) => {
 app.post("/createkey", async (req, res) => {
   try {
     if (req.body.pass == process.env.OwnerPass) {
-      const key = uuidv4()
+      function randomString(length, chars) {
+        if (!chars) {
+          throw new Error('Argument \'chars\' is undefined');
+        }
+      
+        const charsLength = chars.length;
+        if (charsLength > 256) {
+          throw new Error('Argument \'chars\' should not have more than 256 characters'
+            + ', otherwise unpredictability will be broken');
+        }
+      
+        const randomBytes = crypto.randomBytes(length);
+        let result = new Array(length);
+      
+        let cursor = 0;
+        for (let i = 0; i < length; i++) {
+          cursor += randomBytes[i];
+          result[i] = chars[cursor % charsLength];
+        }
+      
+        return result.join('');
+      }
+
+      const key = randomString(6, "ABCDEFGHIJKLMNOPQRSTUVWXYZ")
       const newKey = new accessModel({ key: removeDashes(key), valid: true })
       await newKey.save()
       var Jimp = require("jimp");
@@ -358,7 +381,7 @@ app.post("/createkey", async (req, res) => {
           return Jimp.loadFont(Jimp.FONT_SANS_16_BLACK);
         })
         .then(function (font) {
-          loadedImage.print(font, 250, 325, imageCaption, 600, 100)
+          loadedImage.print(font, 375, 325, imageCaption, 600, 100)
             .write(__dirname + '/images/newInvite.png');
           res.redirect('/images/newInvite.png')
         })
