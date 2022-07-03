@@ -492,7 +492,6 @@ io.on('connection', (socket) => {
           }
         } else {
 
-          
           console.dir(message)
           var newMessage = md.render(message);
           console.dir(newMessage)
@@ -500,7 +499,7 @@ io.on('connection', (socket) => {
           console.dir(realMessage)
           var lastMessage = dmV[0].messages.length + 1
 
-          let msgObj = { message: encrypt(realMessage, decryptCode), username: req.session.user, messageId: lastMessage }
+          let msgObj = { message: encrypt(customFilter.clean(realMessage), decryptCode), username: req.session.user, messageId: lastMessage }
           Obj = { message: customFilter.clean(realMessage), username: req.session.user, messageId: lastMessage }
           io.emit('serverMsg', msgObj, dmV[0].dmId)
           var saveDmV = ({ message: encrypt(customFilter.clean(realMessage), decryptCode), author: req.session.user, sent: Date.now(), deleted: false, messageId: lastMessage })
