@@ -1,6 +1,13 @@
 // Notes: Make a collection of DMS, and each dm would have a list of participants.
 
 const express = require('express');
+const webpush = require('web-push');
+//storing the keys in variables
+// const publicVapidKey = process.env.VAPID_PUBLIC_KEY;
+// const privateVapidKey = process.env.VAPID_PRIVATE_KEY;
+
+// //setting vapid keys details
+// webpush.setVapidDetails('mailto:cheslin23t@gmail.com', publicVapidKey,privateVapidKey);
 const app = express();
 var md = new require('markdown-it')();
 var Filter = require('bad-words');
@@ -107,7 +114,21 @@ function signedin(req, res, next) {
     res.render(__dirname + "/ejs/lockscreen.ejs")
   }
 }
-
+app.use(async function (req, res, next) {
+  
+  if(req.url == '/images/newInvite.png'){
+    const user = await userModel.findOne({ username: req.session.user })
+  if(!user){
+    return res.send("<script>alert('You are not logged in');window.location.href='/chat'</script>")
+  }
+      if(user.admin){
+        return next();
+      }
+      return res.send("<script>alert('You do not have access to this page.');window.location.href='/403'</script>")
+  } else {
+      next();
+  }
+})
 app.use("/images", express.static('images'))
 app.use("/css", express.static('css'))
 app.use("/js", express.static('js'))
@@ -115,6 +136,10 @@ app.use("/bower_components", express.static('bower_components'))
 app.get('/home', (req, res) => {
   res.render(__dirname + "/ejs/home.ejs")
 })
+
+
+
+
 app.get('/', (req, res) => {
   if (req.session.user) {
     res.redirect("/home")
@@ -343,7 +368,30 @@ app.get("/createkey", (req, res) => {
 app.post("/createkey", async (req, res) => {
   try {
     if (req.body.pass == process.env.OwnerPass) {
-      const key = uuidv4()
+      function randomString(length, chars) {
+        if (!chars) {
+          throw new Error('Argument \'chars\' is undefined');
+        }
+      
+        const charsLength = chars.length;
+        if (charsLength > 256) {
+          throw new Error('Argument \'chars\' should not have more than 256 characters'
+            + ', otherwise unpredictability will be broken');
+        }
+      
+        const randomBytes = crypto.randomBytes(length);
+        let result = new Array(length);
+      
+        let cursor = 0;
+        for (let i = 0; i < length; i++) {
+          cursor += randomBytes[i];
+          result[i] = chars[cursor % charsLength];
+        }
+      
+        return result.join('');
+      }
+
+      const key = randomString(6, "ABCDEFGHIJKLMNOPQRSTUVWXYZ")
       const newKey = new accessModel({ key: removeDashes(key), valid: true })
       await newKey.save()
       var Jimp = require("jimp");
@@ -358,7 +406,7 @@ app.post("/createkey", async (req, res) => {
           return Jimp.loadFont(Jimp.FONT_SANS_16_BLACK);
         })
         .then(function (font) {
-          loadedImage.print(font, 250, 325, imageCaption, 600, 100)
+          loadedImage.print(font, 375, 325, imageCaption, 600, 100)
             .write(__dirname + '/images/newInvite.png');
           res.redirect('/images/newInvite.png')
         })
@@ -469,7 +517,6 @@ io.on('connection', (socket) => {
           }
         } else {
 
-          
           console.dir(message)
           var newMessage = md.render(message);
           console.dir(newMessage)
@@ -477,7 +524,7 @@ io.on('connection', (socket) => {
           console.dir(realMessage)
           var lastMessage = dmV[0].messages.length + 1
 
-          let msgObj = { message: encrypt(realMessage, decryptCode), username: req.session.user, messageId: lastMessage }
+          let msgObj = { message: encrypt(customFilter.clean(realMessage), decryptCode), username: req.session.user, messageId: lastMessage }
           Obj = { message: customFilter.clean(realMessage), username: req.session.user, messageId: lastMessage }
           io.emit('serverMsg', msgObj, dmV[0].dmId)
           var saveDmV = ({ message: encrypt(customFilter.clean(realMessage), decryptCode), author: req.session.user, sent: Date.now(), deleted: false, messageId: lastMessage })
