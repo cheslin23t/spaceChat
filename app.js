@@ -1,6 +1,13 @@
 // Notes: Make a collection of DMS, and each dm would have a list of participants.
 
 const express = require('express');
+const webpush = require('web-push');
+//storing the keys in variables
+// const publicVapidKey = process.env.VAPID_PUBLIC_KEY;
+// const privateVapidKey = process.env.VAPID_PRIVATE_KEY;
+
+// //setting vapid keys details
+// webpush.setVapidDetails('mailto:cheslin23t@gmail.com', publicVapidKey,privateVapidKey);
 const app = express();
 var md = new require('markdown-it')();
 var Filter = require('bad-words');
@@ -107,7 +114,21 @@ function signedin(req, res, next) {
     res.render(__dirname + "/ejs/lockscreen.ejs")
   }
 }
-
+app.use(async function (req, res, next) {
+  
+  if(req.url == '/images/newInvite.png'){
+    const user = await userModel.findOne({ username: req.session.user })
+  if(!user){
+    return res.send("<script>alert('You are not logged in');window.location.href='/chat'</script>")
+  }
+      if(user.admin){
+        return next();
+      }
+      return res.send("<script>alert('You do not have access to this page.');window.location.href='/403'</script>")
+  } else {
+      next();
+  }
+})
 app.use("/images", express.static('images'))
 app.use("/css", express.static('css'))
 app.use("/js", express.static('js'))
@@ -115,6 +136,10 @@ app.use("/bower_components", express.static('bower_components'))
 app.get('/home', (req, res) => {
   res.render(__dirname + "/ejs/home.ejs")
 })
+
+
+
+
 app.get('/', (req, res) => {
   if (req.session.user) {
     res.redirect("/home")
